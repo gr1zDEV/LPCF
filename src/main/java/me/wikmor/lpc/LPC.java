@@ -21,6 +21,7 @@ public final class LPC extends JavaPlugin {
 	private static final Pattern BUKKIT_HEX_PATTERN = Pattern.compile("&x(&[A-Fa-f0-9]){6}");
 
 	private LuckPerms luckPerms;
+	private ChatToggleManager chatToggleManager;
 
 
 	@Override
@@ -34,13 +35,30 @@ public final class LPC extends JavaPlugin {
 		}
 
 		saveDefaultConfig();
-		getServer().getPluginManager().registerEvents(new PaperChatListener(this), this);
+
+		this.chatToggleManager = new ChatToggleManager(this);
+		this.chatToggleManager.load();
+
+		getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.chatToggleManager), this);
+
+		if (getCommand("chattoggle") != null) {
+			getCommand("chattoggle").setExecutor(new ChatToggleCommand(this, this.chatToggleManager));
+		} else {
+			getLogger().warning("Failed to register /chattoggle command.");
+		}
 
 		final String[] chatPlugins = {"EssentialsChat", "VentureChat", "HeroChat", "DeluxeChat", "ChatManager", "ChatEx", "UltraChat", "TownyChat"};
 		for (final String pluginName : chatPlugins) {
 			if (getServer().getPluginManager().isPluginEnabled(pluginName)) {
 				getLogger().warning("Detected " + pluginName + " which may also format chat. To avoid message duplication, disable chat formatting in " + pluginName + ".");
 			}
+		}
+	}
+
+	@Override
+	public void onDisable() {
+		if (this.chatToggleManager != null) {
+			this.chatToggleManager.save();
 		}
 	}
 

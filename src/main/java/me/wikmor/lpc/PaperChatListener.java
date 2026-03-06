@@ -11,13 +11,18 @@ import org.bukkit.event.Listener;
 public final class PaperChatListener implements Listener {
 
     private final LPC plugin;
+    private final ChatToggleManager chatToggleManager;
 
-    public PaperChatListener(final LPC plugin) {
+    public PaperChatListener(final LPC plugin, final ChatToggleManager chatToggleManager) {
         this.plugin = plugin;
+        this.chatToggleManager = chatToggleManager;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChat(final AsyncChatEvent event) {
+        event.viewers().removeIf(audience -> audience instanceof Player viewer
+                && chatToggleManager.isChatHidden(viewer.getUniqueId()));
+
         final Player player = event.getPlayer();
 
         String format = plugin.buildFormat(player);
