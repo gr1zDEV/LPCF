@@ -12,7 +12,7 @@
 	<properties>
 		<author>PM2</author>
 		<main.class>me.wikmor.lpc.LPC</main.class>
-		<java.version>1.8</java.version>
+		<java.version>21</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	
@@ -31,20 +31,8 @@
         </repository>
 	</repositories>
 	
-	<pluginRepositories>
-		<pluginRepository>
-			<id>maven-snapshots</id>
-			<url>https://repository.apache.org/content/repositories/snapshots/</url>
-		</pluginRepository>
-	</pluginRepositories>
-	
 	<dependencies>
-    	<dependency>
-           	<groupId>org.spigotmc</groupId>
-           	<artifactId>spigot-api</artifactId>
-           	<version>1.21.11-R0.1-SNAPSHOT</version>
-        	<scope>provided</scope>
-    	</dependency>
+    	
 		<dependency>
 			<groupId>io.papermc.paper</groupId>
 			<artifactId>paper-api</artifactId>
@@ -96,7 +84,7 @@
 				
 				<!-- We use latest snapshot here for modern Java compatibility. Change version to the latest one from
 					 https://repository.apache.org/content/repositories/snapshots/org/apache/maven/plugins/maven-shade-plugin/ -->
-				<version>3.3.1-SNAPSHOT</version>
+				<version>3.5.2</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
