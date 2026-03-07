@@ -1,6 +1,7 @@
 package com.ezinnovations.ezchat.commands;
 
 import com.ezinnovations.ezchat.EzChat;
+import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.managers.MessageManager;
 
 import org.bukkit.command.Command;
@@ -16,10 +17,12 @@ public final class ReplyCommand implements CommandExecutor {
 
     private final EzChat plugin;
     private final MessageManager messageManager;
+    private final ChatToggleManager chatToggleManager;
 
-    public ReplyCommand(final EzChat plugin, final MessageManager messageManager) {
+    public ReplyCommand(final EzChat plugin, final MessageManager messageManager, final ChatToggleManager chatToggleManager) {
         this.plugin = plugin;
         this.messageManager = messageManager;
+        this.chatToggleManager = chatToggleManager;
     }
 
     @Override
@@ -53,6 +56,11 @@ public final class ReplyCommand implements CommandExecutor {
 
         if (receiver.getUniqueId().equals(player.getUniqueId())) {
             player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.cannot-message-self", "&cYou cannot message yourself.")));
+            return true;
+        }
+
+        if (chatToggleManager.arePrivateMessagesDisabled(receiver.getUniqueId())) {
+            player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.target-disabled-messages", "&cThat player has private messages disabled.")));
             return true;
         }
 

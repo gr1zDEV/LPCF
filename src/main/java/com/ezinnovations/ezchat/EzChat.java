@@ -3,6 +3,7 @@ package com.ezinnovations.ezchat;
 import com.ezinnovations.ezchat.commands.ChatToggleCommand;
 import com.ezinnovations.ezchat.commands.MessageCommand;
 import com.ezinnovations.ezchat.commands.ReplyCommand;
+import com.ezinnovations.ezchat.commands.ToggleMsgCommand;
 import com.ezinnovations.ezchat.listeners.PaperChatListener;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.managers.MessageManager;
@@ -59,15 +60,21 @@ public final class EzChat extends JavaPlugin {
 		}
 
 		if (getCommand("msg") != null) {
-			getCommand("msg").setExecutor(new MessageCommand(this, this.messageManager));
+			getCommand("msg").setExecutor(new MessageCommand(this, this.messageManager, this.chatToggleManager));
 		} else {
 			getLogger().warning("[EzChat] Failed to register /msg command.");
 		}
 
 		if (getCommand("reply") != null) {
-			getCommand("reply").setExecutor(new ReplyCommand(this, this.messageManager));
+			getCommand("reply").setExecutor(new ReplyCommand(this, this.messageManager, this.chatToggleManager));
 		} else {
 			getLogger().warning("[EzChat] Failed to register /reply command.");
+		}
+
+		if (getCommand("togglemsg") != null) {
+			getCommand("togglemsg").setExecutor(new ToggleMsgCommand(this, this.chatToggleManager));
+		} else {
+			getLogger().warning("[EzChat] Failed to register /togglemsg command.");
 		}
 
 		final String[] chatPlugins = {"EssentialsChat", "VentureChat", "HeroChat", "DeluxeChat", "ChatManager", "ChatEx", "UltraChat", "TownyChat"};

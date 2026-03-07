@@ -20,6 +20,10 @@ commands:
   reply:
     description: Reply to your last private message target.
     usage: "Usage: /reply <message>"
+  togglemsg:
+    description: Toggle receiving private messages.
+    usage: "Usage: /togglemsg"
+    aliases: [msgtoggle]
 permissions:
   ezchat.reload:
     description: Allows use of /ezchat reload
@@ -44,4 +48,7 @@ permissions:
     default: true
   ezchat.reply:
     description: Allows use of /reply
+    default: true
+  ezchat.togglemsg:
+    description: Allows use of /togglemsg
     default: true
