@@ -1,57 +1,45 @@
 # EzChat
 
-A modern LuckPerms-powered chat formatting plugin for **Paper/Folia 1.21.11** servers.
+EzChat is a lightweight, LuckPerms-powered chat formatter for **Paper/Folia 1.21+**.
 
-EzChat lets you build chat formats from LuckPerms prefixes/suffixes/meta, optionally expand PlaceholderAPI placeholders, and control who receives chat with a per-player `/chattoggle` setting.
+It gives you a configurable chat pipeline with group-aware formats, optional PlaceholderAPI expansion, message color permissions, and per-player chat visibility toggles.
 
 ---
 
-## Features
+## What’s New / Current Feature Set
 
-- **LuckPerms-based chat formatting**
-  - Uses primary prefix/suffix and full prefix/suffix stacks.
-  - Supports per-group format overrides.
-- **Rich placeholders in formats**
-  - Built-in tokens like `{prefix}`, `{suffix}`, `{name}`, `{displayname}`, `{world}`, `{message}`, `{username-color}`, and `{message-color}`.
-- **Color controls by permission**
-  - Standard color codes (`&a`, `&7`, etc.) via `lpc.colorcodes`.
-  - RGB/hex (`&#rrggbb` and Bukkit `&x&...`) via `lpc.rgbcodes`.
-- **Optional PlaceholderAPI integration**
-  - If PlaceholderAPI is installed, placeholders in formats are expanded automatically.
-- **Chat visibility toggle**
-  - `/chattoggle` lets players hide/show public chat.
-  - State is persisted in `plugins/EzChat/toggles.yml`.
-- **Admin utilities**
-  - `/lpc reload` to reload config.
-  - `/lpc clear` to clear chat and broadcast a configurable message.
-  - `/lpc debug <player>` to inspect resolved LuckPerms formatting values.
-- **Compatibility-minded behavior**
-  - Native Paper `AsyncChatEvent` pipeline.
-  - Folia supported.
-  - Optional Floodgate/Geyser Bedrock detection hook.
-  - Warns when known chat-formatting plugins are also installed to help avoid duplicate formatting.
+- LuckPerms metadata formatting (`prefix`, `suffix`, stacked prefixes/suffixes, meta colors).
+- Group-specific format overrides (`group-formats.<primary-group>`).
+- Placeholder-ready formats (native EzChat placeholders + optional PlaceholderAPI placeholders).
+- Fine-grained player color permissions:
+  - `lpc.colorcodes` for legacy `&` colors.
+  - `lpc.rgbcodes` for hex/RGB colors.
+- `/chattoggle` with persistent toggle state in `plugins/EzChat/toggles.yml`.
+- `/lpc debug <player>` output for fast troubleshooting.
+- Floodgate hook for Bedrock detection (graceful fallback if Floodgate is absent).
+- Paper `AsyncChatEvent` integration and Folia support.
 
 ---
 
 ## Compatibility
 
-- **Minecraft/Paper API:** `1.21.11`
-- **Folia:** supported (`folia-supported: true`)
+- **Platform:** Paper / Folia
+- **API version:** 1.21
 - **Java:** 21
 - **Required dependency:** LuckPerms
-- **Optional dependencies:** PlaceholderAPI, Floodgate, Geyser-Spigot
+- **Optional dependencies:** PlaceholderAPI, floodgate, Geyser-Spigot
 
 ---
 
 ## Installation
 
 1. Download the latest `EzChat-<version>.jar` from Releases.
-2. Place it in your server's `plugins/` folder.
-3. Make sure **LuckPerms** is installed.
-4. (Optional) Install **PlaceholderAPI** if you want PAPI placeholders in format strings.
-5. Start/restart the server.
-6. Edit `plugins/EzChat/config.yml` to customize your chat format.
-7. Run `/lpc reload` after config changes.
+2. Put it in your server `plugins/` folder.
+3. Ensure **LuckPerms** is installed.
+4. *(Optional)* Install **PlaceholderAPI** for PAPI format placeholders.
+5. Start or restart the server.
+6. Edit `plugins/EzChat/config.yml`.
+7. Run `/lpc reload` to apply config changes.
 
 ---
 
@@ -61,28 +49,28 @@ EzChat lets you build chat formats from LuckPerms prefixes/suffixes/meta, option
 
 - `/lpc reload` — reloads `config.yml`.
 - `/lpc clear` — clears chat and broadcasts `clear-chat-message`.
-- `/lpc debug <player>` — prints resolved LuckPerms prefix/suffix/meta details for troubleshooting.
+- `/lpc debug <player>` — displays resolved LuckPerms metadata and relevant plugin state.
 
 ### `/chattoggle`
 
-- Toggles whether the player receives public chat messages.
+- Toggles whether that player receives public chat messages.
 
 ---
 
 ## Permissions
 
-- `lpc.reload` — allows `/lpc reload` (default: op)
-- `lpc.clearchat` — allows `/lpc clear` (default: op)
-- `lpc.debug` — allows `/lpc debug` (default: op)
-- `lpc.colorcodes` — allows legacy color codes in user messages (default: false)
-- `lpc.rgbcodes` — allows RGB/hex codes in user messages (default: false)
-- `lpc.chattoggle` — allows `/chattoggle` (default: true)
+- `lpc.reload` — use `/lpc reload` *(default: op)*
+- `lpc.clearchat` — use `/lpc clear` *(default: op)*
+- `lpc.debug` — use `/lpc debug` *(default: op)*
+- `lpc.chattoggle` — use `/chattoggle` *(default: true)*
+- `lpc.colorcodes` — allow legacy `&` color codes in player message input *(default: false)*
+- `lpc.rgbcodes` — allow hex/RGB color codes in player message input *(default: false)*
 
 ---
 
 ## Configuration
 
-Default format:
+Default:
 
 ```yml
 chat-format: "{prefix}{name}&r: {message}"
@@ -101,9 +89,9 @@ chat-format: "{prefix}{name}&r: {message}"
 - `{username-color}`
 - `{message-color}`
 
-### Group-specific formats
+If PlaceholderAPI is installed, PAPI placeholders inside format strings are also resolved.
 
-You can override `chat-format` by LuckPerms primary group:
+### Group-specific formats
 
 ```yml
 group-formats:
@@ -111,16 +99,7 @@ group-formats:
   admin: "&c[Admin] {prefix}{name}&r: {message}"
 ```
 
-### Color input rules for player messages
-
-- Has both `lpc.colorcodes` + `lpc.rgbcodes`: can use legacy + hex.
-- Has only `lpc.colorcodes`: legacy colors allowed, hex stripped.
-- Has only `lpc.rgbcodes`: hex allowed, legacy stripped.
-- Has neither: all color codes stripped.
-
----
-
-## Example formats
+### Example formats
 
 ```yml
 chat-format: "[{world}] {prefix}{name}&r: {message}"
@@ -128,29 +107,39 @@ chat-format: "{prefix}{name}{suffix}&r: {message}"
 chat-format: "{prefix}{username-color}{name}&r: {message-color}{message}"
 ```
 
+### Player message color rules
+
+- Has **both** `lpc.colorcodes` + `lpc.rgbcodes` → legacy + hex accepted.
+- Has **only** `lpc.colorcodes` → legacy accepted, hex removed.
+- Has **only** `lpc.rgbcodes` → hex accepted, legacy removed.
+- Has **neither** → all color codes removed.
+
 ---
 
 ## Troubleshooting
 
-- **No prefixes/suffixes showing?**
-  - Verify LuckPerms is installed and user/group metadata is configured.
-  - Run `/lpc debug <player>` and check reported values.
-- **PAPI placeholders not resolving?**
-  - Confirm PlaceholderAPI is installed and required expansions are present.
-- **Duplicate chat messages/formats?**
-  - Disable formatting in other chat plugins (EssentialsChat, VentureChat, etc.) so EzChat is the only formatter.
-- **Color codes not working for players?**
-  - Check `lpc.colorcodes` and/or `lpc.rgbcodes` permissions.
+- **Prefixes/suffixes missing**
+  - Verify LuckPerms metadata exists for the player/group.
+  - Run `/lpc debug <player>` and inspect resolved values.
+
+- **Placeholders not expanding**
+  - Verify PlaceholderAPI is installed and expansions are available.
+
+- **Duplicate formatting/messages**
+  - Disable chat formatting in other chat plugins (EssentialsChat, VentureChat, etc.).
+
+- **Color permissions not behaving as expected**
+  - Confirm the player’s effective permissions for `lpc.colorcodes` and `lpc.rgbcodes`.
 
 ---
 
-## Building from source
+## Build from Source
 
 ```bash
 mvn clean package
 ```
 
-The shaded output jar is generated as:
+Output JAR:
 
 ```text
 target/EzChat-<version>.jar
@@ -160,7 +149,7 @@ target/EzChat-<version>.jar
 
 ## Releases
 
-GitHub Actions automatically builds and publishes release artifacts when a version tag is pushed.
+This repository includes a GitHub Actions release workflow.
 
 Supported tag patterns:
 - `v*` (example: `v3.7.1`)
