@@ -27,8 +27,16 @@ commands:
     aliases: [msgtoggle]
   ignore:
     description: Ignore players
-    usage: "Usage: /ignore <player> <ALL|CHAT|MSG>"
+    usage: "Usage: /ignore <player> <ALL|CHAT|MSG|MAIL>"
     permission: ezchat.ignore
+  mail:
+    description: Persistent in-game mail system
+    usage: "Usage: /mail <player> <message>"
+    permission: ezchat.mail
+  togglemail:
+    description: Toggle receiving mail
+    usage: "Usage: /togglemail"
+    permission: ezchat.togglemail
 permissions:
   ezchat.reload:
     description: Allows use of /ezchat reload
@@ -59,4 +67,22 @@ permissions:
     default: true
   ezchat.ignore:
     description: Allows use of /ignore
+    default: true
+  ezchat.mail:
+    description: Allows use of /mail
+    default: true
+  ezchat.mail.inbox:
+    description: Allows viewing /mail inbox
+    default: true
+  ezchat.mail.sent:
+    description: Allows viewing /mail sent
+    default: true
+  ezchat.mail.received:
+    description: Allows viewing /mail received
+    default: true
+  ezchat.mail.unread:
+    description: Allows viewing /mail unread
+    default: true
+  ezchat.togglemail:
+    description: Allows use of /togglemail
     default: true

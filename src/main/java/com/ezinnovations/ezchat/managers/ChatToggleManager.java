@@ -18,6 +18,7 @@ public final class ChatToggleManager {
     private final File togglesFile;
     private final Set<UUID> hiddenChatPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> privateMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> mailDisabledPlayers = ConcurrentHashMap.newKeySet();
 
     public ChatToggleManager(final EzChat plugin) {
         this.plugin = plugin;
@@ -43,6 +44,7 @@ public final class ChatToggleManager {
         final FileConfiguration togglesConfig = YamlConfiguration.loadConfiguration(togglesFile);
         hiddenChatPlayers.clear();
         privateMessagesDisabledPlayers.clear();
+        mailDisabledPlayers.clear();
 
         final ConfigurationSection chatHiddenSection = togglesConfig.getConfigurationSection("chat-hidden");
         if (chatHiddenSection != null) {
@@ -64,6 +66,11 @@ public final class ChatToggleManager {
         final ConfigurationSection privateMessageSection = togglesConfig.getConfigurationSection("private-messages-disabled");
         if (privateMessageSection != null) {
             loadEnabledUuids(privateMessageSection, privateMessagesDisabledPlayers, "private-messages-disabled");
+        }
+
+        final ConfigurationSection mailSection = togglesConfig.getConfigurationSection("mail-disabled");
+        if (mailSection != null) {
+            loadEnabledUuids(mailSection, mailDisabledPlayers, "mail-disabled");
         }
     }
 
@@ -114,6 +121,23 @@ public final class ChatToggleManager {
         return nowDisabled;
     }
 
+    public boolean isMailDisabled(final UUID uuid) {
+        return mailDisabledPlayers.contains(uuid);
+    }
+
+    public boolean toggleMail(final UUID uuid) {
+        final boolean nowDisabled;
+        if (mailDisabledPlayers.contains(uuid)) {
+            mailDisabledPlayers.remove(uuid);
+            nowDisabled = false;
+        } else {
+            mailDisabledPlayers.add(uuid);
+            nowDisabled = true;
+        }
+        save();
+        return nowDisabled;
+    }
+
     public void save() {
         final FileConfiguration togglesConfig = new YamlConfiguration();
 
@@ -123,6 +147,10 @@ public final class ChatToggleManager {
 
         for (final UUID uuid : privateMessagesDisabledPlayers) {
             togglesConfig.set("private-messages-disabled." + uuid, true);
+        }
+
+        for (final UUID uuid : mailDisabledPlayers) {
+            togglesConfig.set("mail-disabled." + uuid, true);
         }
 
         try {

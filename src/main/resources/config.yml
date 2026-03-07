@@ -61,8 +61,28 @@ ignore:
   enabled-all: "&cYou are now ignoring {player}."
   enabled-chat: "&cYou will no longer see chat messages from {player}."
   enabled-msg: "&cYou will no longer receive private messages from {player}."
+  enabled-mail: "&cYou will no longer receive mail from {player}."
   disabled: "&aYou are no longer ignoring {player}."
   player-not-found: "&cPlayer not found."
   cannot-ignore-self: "&cYou cannot ignore yourself."
   sender-ignored: "&cThat player is ignoring you."
   no-permission: "&cYou do not have permission."
+
+mail:
+  no-permission: "&cYou do not have permission."
+  player-not-found: "&cPlayer not found."
+  cannot-mail-self: "&cYou cannot mail yourself."
+  sent-confirmation: "&aMail sent to {player}."
+  received-notify: "&eYou received new mail from {player}. Use /mail inbox"
+  target-mail-disabled: "&cThat player has mail disabled."
+  target-ignoring-mail: "&cThat player is ignoring your mail."
+  toggle-enabled: "&aYou can now receive mail."
+  toggle-disabled: "&cYou will no longer receive mail."
+  inbox-empty: "&7Your inbox is empty."
+  unread-empty: "&7You have no unread mail."
+  sent-empty: "&7You have not sent any mail."
+  no-mail-from-player: "&7No received mail from {player}."
+  no-mail-to-player: "&7No sent mail to {player}."
+  unread-login-notify:
+    enabled: true
+    message: "&eYou have {count} unread mail(s). Use /mail inbox"

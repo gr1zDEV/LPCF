@@ -17,7 +17,8 @@ public final class IgnoreManager {
     public enum IgnoreType {
         ALL,
         CHAT,
-        MSG
+        MSG,
+        MAIL
     }
 
     private final EzChat plugin;
