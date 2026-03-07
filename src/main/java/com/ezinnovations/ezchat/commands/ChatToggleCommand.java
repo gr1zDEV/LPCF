@@ -25,7 +25,7 @@ public final class ChatToggleCommand implements CommandExecutor {
             return true;
         }
 
-        if (!player.hasPermission("lpc.chattoggle")) {
+        if (!player.hasPermission("ezchat.chattoggle")) {
             player.sendMessage(plugin.colorize(plugin.getConfig().getString("no-permission", "&cYou do not have permission.")));
             return true;
         }
