@@ -39,7 +39,7 @@ group-formats:
 # Message shown after /ezchat clear
 clear-chat-message: "&7Chat has been cleared by a staff member."
 
-# /chattoggle messages
+# /togglechat messages
 chat-toggle-enabled: "&aChat is now visible."
 chat-toggle-disabled: "&cChat is now hidden."
 no-permission: "&cYou do not have permission."
