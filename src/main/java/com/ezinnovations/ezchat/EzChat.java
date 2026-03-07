@@ -1,8 +1,11 @@
 package com.ezinnovations.ezchat;
 
 import com.ezinnovations.ezchat.commands.ChatToggleCommand;
+import com.ezinnovations.ezchat.commands.MessageCommand;
+import com.ezinnovations.ezchat.commands.ReplyCommand;
 import com.ezinnovations.ezchat.listeners.PaperChatListener;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
+import com.ezinnovations.ezchat.managers.MessageManager;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.luckperms.api.LuckPerms;
@@ -26,6 +29,7 @@ public final class EzChat extends JavaPlugin {
 
 	private LuckPerms luckPerms;
 	private ChatToggleManager chatToggleManager;
+	private MessageManager messageManager;
 	private FloodgateHook floodgateHook;
 
 
@@ -43,6 +47,7 @@ public final class EzChat extends JavaPlugin {
 
 		this.chatToggleManager = new ChatToggleManager(this);
 		this.chatToggleManager.load();
+		this.messageManager = new MessageManager();
 		this.floodgateHook = new FloodgateHook(this);
 
 		getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.chatToggleManager, this.floodgateHook), this);
@@ -51,6 +56,18 @@ public final class EzChat extends JavaPlugin {
 			getCommand("chattoggle").setExecutor(new ChatToggleCommand(this, this.chatToggleManager));
 		} else {
 			getLogger().warning("[EzChat] Failed to register /chattoggle command.");
+		}
+
+		if (getCommand("msg") != null) {
+			getCommand("msg").setExecutor(new MessageCommand(this, this.messageManager));
+		} else {
+			getLogger().warning("[EzChat] Failed to register /msg command.");
+		}
+
+		if (getCommand("reply") != null) {
+			getCommand("reply").setExecutor(new ReplyCommand(this, this.messageManager));
+		} else {
+			getLogger().warning("[EzChat] Failed to register /reply command.");
 		}
 
 		final String[] chatPlugins = {"EssentialsChat", "VentureChat", "HeroChat", "DeluxeChat", "ChatManager", "ChatEx", "UltraChat", "TownyChat"};
