@@ -1,4 +1,7 @@
-package me.wikmor.lpc;
+package com.ezinnovations.ezchat.commands;
+
+import com.ezinnovations.ezchat.EzChat;
+import com.ezinnovations.ezchat.managers.ChatToggleManager;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -7,10 +10,10 @@ import org.bukkit.entity.Player;
 
 public final class ChatToggleCommand implements CommandExecutor {
 
-    private final LPC plugin;
+    private final EzChat plugin;
     private final ChatToggleManager chatToggleManager;
 
-    public ChatToggleCommand(final LPC plugin, final ChatToggleManager chatToggleManager) {
+    public ChatToggleCommand(final EzChat plugin, final ChatToggleManager chatToggleManager) {
         this.plugin = plugin;
         this.chatToggleManager = chatToggleManager;
     }

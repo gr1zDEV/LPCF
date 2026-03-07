@@ -1,4 +1,6 @@
-package me.wikmor.lpc;
+package com.ezinnovations.ezchat.utils;
+
+import com.ezinnovations.ezchat.EzChat;
 
 import org.bukkit.entity.Player;
 
@@ -9,12 +11,12 @@ import java.util.logging.Level;
 
 public final class FloodgateHook {
 
-    private final LPC plugin;
+    private final EzChat plugin;
     private Method isFloodgatePlayerMethod;
     private Object floodgateApiInstance;
     private boolean initialized;
 
-    public FloodgateHook(final LPC plugin) {
+    public FloodgateHook(final EzChat plugin) {
         this.plugin = plugin;
     }
 

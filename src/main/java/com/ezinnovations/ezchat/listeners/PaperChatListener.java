@@ -1,4 +1,8 @@
-package me.wikmor.lpc;
+package com.ezinnovations.ezchat.listeners;
+
+import com.ezinnovations.ezchat.EzChat;
+import com.ezinnovations.ezchat.managers.ChatToggleManager;
+import com.ezinnovations.ezchat.utils.FloodgateHook;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
@@ -14,11 +18,11 @@ import java.util.UUID;
 
 public final class PaperChatListener implements Listener {
 
-    private final LPC plugin;
+    private final EzChat plugin;
     private final ChatToggleManager chatToggleManager;
     private final FloodgateHook floodgateHook;
 
-    public PaperChatListener(final LPC plugin, final ChatToggleManager chatToggleManager, final FloodgateHook floodgateHook) {
+    public PaperChatListener(final EzChat plugin, final ChatToggleManager chatToggleManager, final FloodgateHook floodgateHook) {
         this.plugin = plugin;
         this.chatToggleManager = chatToggleManager;
         this.floodgateHook = floodgateHook;
