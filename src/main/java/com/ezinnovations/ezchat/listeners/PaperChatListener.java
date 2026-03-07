@@ -2,6 +2,7 @@ package com.ezinnovations.ezchat.listeners;
 
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
+import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
@@ -20,11 +21,13 @@ public final class PaperChatListener implements Listener {
 
     private final EzChat plugin;
     private final ChatToggleManager chatToggleManager;
+    private final IgnoreManager ignoreManager;
     private final FloodgateHook floodgateHook;
 
-    public PaperChatListener(final EzChat plugin, final ChatToggleManager chatToggleManager, final FloodgateHook floodgateHook) {
+    public PaperChatListener(final EzChat plugin, final ChatToggleManager chatToggleManager, final IgnoreManager ignoreManager, final FloodgateHook floodgateHook) {
         this.plugin = plugin;
         this.chatToggleManager = chatToggleManager;
+        this.ignoreManager = ignoreManager;
         this.floodgateHook = floodgateHook;
     }
 
@@ -65,6 +68,10 @@ public final class PaperChatListener implements Listener {
     private boolean shouldReceiveChat(final Player player, final UUID senderUuid) {
         if (player.getUniqueId().equals(senderUuid)) {
             return true;
+        }
+
+        if (ignoreManager.isIgnoring(player.getUniqueId(), senderUuid, IgnoreManager.IgnoreType.CHAT)) {
+            return false;
         }
 
         if (!chatToggleManager.isChatHidden(player.getUniqueId())) {

@@ -2,6 +2,7 @@ package com.ezinnovations.ezchat.commands;
 
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
+import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.managers.MessageManager;
 
 import org.bukkit.command.Command;
@@ -18,11 +19,13 @@ public final class ReplyCommand implements CommandExecutor {
     private final EzChat plugin;
     private final MessageManager messageManager;
     private final ChatToggleManager chatToggleManager;
+    private final IgnoreManager ignoreManager;
 
-    public ReplyCommand(final EzChat plugin, final MessageManager messageManager, final ChatToggleManager chatToggleManager) {
+    public ReplyCommand(final EzChat plugin, final MessageManager messageManager, final ChatToggleManager chatToggleManager, final IgnoreManager ignoreManager) {
         this.plugin = plugin;
         this.messageManager = messageManager;
         this.chatToggleManager = chatToggleManager;
+        this.ignoreManager = ignoreManager;
     }
 
     @Override
@@ -61,6 +64,11 @@ public final class ReplyCommand implements CommandExecutor {
 
         if (chatToggleManager.arePrivateMessagesDisabled(receiver.getUniqueId())) {
             player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.target-disabled-messages", "&cThat player has private messages disabled.")));
+            return true;
+        }
+
+        if (ignoreManager.isIgnoring(receiver.getUniqueId(), player.getUniqueId(), IgnoreManager.IgnoreType.MSG)) {
+            player.sendMessage(plugin.colorize(plugin.getConfig().getString("ignore.sender-ignored", "&cThat player is ignoring you.")));
             return true;
         }
 
