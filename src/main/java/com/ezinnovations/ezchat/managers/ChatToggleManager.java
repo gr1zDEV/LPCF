@@ -1,4 +1,6 @@
-package me.wikmor.lpc;
+package com.ezinnovations.ezchat.managers;
+
+import com.ezinnovations.ezchat.EzChat;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -11,11 +13,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class ChatToggleManager {
 
-    private final LPC plugin;
+    private final EzChat plugin;
     private final File togglesFile;
     private final Set<UUID> hiddenChatPlayers = ConcurrentHashMap.newKeySet();
 
-    public ChatToggleManager(final LPC plugin) {
+    public ChatToggleManager(final EzChat plugin) {
         this.plugin = plugin;
         this.togglesFile = new File(plugin.getDataFolder(), "toggles.yml");
     }

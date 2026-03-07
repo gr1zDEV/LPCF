@@ -1,8 +1,8 @@
-# LPC
+# EzChat
 
 A modern LuckPerms-powered chat formatting plugin for **Paper/Folia 1.21.11** servers.
 
-LPC lets you build chat formats from LuckPerms prefixes/suffixes/meta, optionally expand PlaceholderAPI placeholders, and control who receives chat with a per-player `/chattoggle` setting.
+EzChat lets you build chat formats from LuckPerms prefixes/suffixes/meta, optionally expand PlaceholderAPI placeholders, and control who receives chat with a per-player `/chattoggle` setting.
 
 ---
 
@@ -20,7 +20,7 @@ LPC lets you build chat formats from LuckPerms prefixes/suffixes/meta, optionall
   - If PlaceholderAPI is installed, placeholders in formats are expanded automatically.
 - **Chat visibility toggle**
   - `/chattoggle` lets players hide/show public chat.
-  - State is persisted in `plugins/LPC/toggles.yml`.
+  - State is persisted in `plugins/EzChat/toggles.yml`.
 - **Admin utilities**
   - `/lpc reload` to reload config.
   - `/lpc clear` to clear chat and broadcast a configurable message.
@@ -45,12 +45,12 @@ LPC lets you build chat formats from LuckPerms prefixes/suffixes/meta, optionall
 
 ## Installation
 
-1. Download the latest `LPC-<version>.jar` from Releases.
+1. Download the latest `EzChat-<version>.jar` from Releases.
 2. Place it in your server's `plugins/` folder.
 3. Make sure **LuckPerms** is installed.
 4. (Optional) Install **PlaceholderAPI** if you want PAPI placeholders in format strings.
 5. Start/restart the server.
-6. Edit `plugins/LPC/config.yml` to customize your chat format.
+6. Edit `plugins/EzChat/config.yml` to customize your chat format.
 7. Run `/lpc reload` after config changes.
 
 ---
@@ -138,7 +138,7 @@ chat-format: "{prefix}{username-color}{name}&r: {message-color}{message}"
 - **PAPI placeholders not resolving?**
   - Confirm PlaceholderAPI is installed and required expansions are present.
 - **Duplicate chat messages/formats?**
-  - Disable formatting in other chat plugins (EssentialsChat, VentureChat, etc.) so LPC is the only formatter.
+  - Disable formatting in other chat plugins (EssentialsChat, VentureChat, etc.) so EzChat is the only formatter.
 - **Color codes not working for players?**
   - Check `lpc.colorcodes` and/or `lpc.rgbcodes` permissions.
 
@@ -153,7 +153,7 @@ mvn clean package
 The shaded output jar is generated as:
 
 ```text
-target/LPC-<version>.jar
+target/EzChat-<version>.jar
 ```
 
 ---

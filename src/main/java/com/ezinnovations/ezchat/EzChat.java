@@ -1,5 +1,9 @@
-package me.wikmor.lpc;
+package com.ezinnovations.ezchat;
 
+import com.ezinnovations.ezchat.commands.ChatToggleCommand;
+import com.ezinnovations.ezchat.listeners.PaperChatListener;
+import com.ezinnovations.ezchat.managers.ChatToggleManager;
+import com.ezinnovations.ezchat.utils.FloodgateHook;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.cacheddata.CachedMetaData;
@@ -15,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public final class LPC extends JavaPlugin {
+public final class EzChat extends JavaPlugin {
 
 	private static final Pattern HEX_PATTERN = Pattern.compile("&#([A-Fa-f0-9]{6})");
 	private static final Pattern BUKKIT_HEX_PATTERN = Pattern.compile("&x(&[A-Fa-f0-9]){6}");
@@ -30,7 +34,7 @@ public final class LPC extends JavaPlugin {
 		// Load an instance of 'LuckPerms' using the services manager.
 		this.luckPerms = getServer().getServicesManager().load(LuckPerms.class);
 		if (this.luckPerms == null) {
-			getLogger().severe("LuckPerms not found! LPC requires LuckPerms to function.");
+			getLogger().severe("[EzChat] LuckPerms not found! EzChat requires LuckPerms to function.");
 			getServer().getPluginManager().disablePlugin(this);
 			return;
 		}
@@ -46,13 +50,13 @@ public final class LPC extends JavaPlugin {
 		if (getCommand("chattoggle") != null) {
 			getCommand("chattoggle").setExecutor(new ChatToggleCommand(this, this.chatToggleManager));
 		} else {
-			getLogger().warning("Failed to register /chattoggle command.");
+			getLogger().warning("[EzChat] Failed to register /chattoggle command.");
 		}
 
 		final String[] chatPlugins = {"EssentialsChat", "VentureChat", "HeroChat", "DeluxeChat", "ChatManager", "ChatEx", "UltraChat", "TownyChat"};
 		for (final String pluginName : chatPlugins) {
 			if (getServer().getPluginManager().isPluginEnabled(pluginName)) {
-				getLogger().warning("Detected " + pluginName + " which may also format chat. To avoid message duplication, disable chat formatting in " + pluginName + ".");
+				getLogger().warning("[EzChat] Detected " + pluginName + " which may also format chat. To avoid message duplication, disable chat formatting in " + pluginName + ".");
 			}
 		}
 	}
@@ -68,7 +72,7 @@ public final class LPC extends JavaPlugin {
 	public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
 		if (args.length == 1 && "reload".equals(args[0]) && sender.hasPermission("lpc.reload")) {
 			reloadConfig();
-			sender.sendMessage(colorize("&aLPC has been reloaded."));
+			sender.sendMessage(colorize("&aEzChat has been reloaded."));
 			return true;
 		}
 
@@ -90,7 +94,7 @@ public final class LPC extends JavaPlugin {
 				return true;
 			}
 			final CachedMetaData debugMeta = luckPerms.getPlayerAdapter(Player.class).getMetaData(target);
-			sender.sendMessage(colorize("&6&lLPC Debug: &f" + target.getName()));
+			sender.sendMessage(colorize("&6&lEzChat Debug: &f" + target.getName()));
 			sender.sendMessage(colorize("&7Primary Group: &f" + debugMeta.getPrimaryGroup()));
 			sender.sendMessage(colorize("&7Prefix: &f" + (debugMeta.getPrefix() != null ? debugMeta.getPrefix() : "&cnone")));
 			sender.sendMessage(colorize("&7Suffix: &f" + (debugMeta.getSuffix() != null ? debugMeta.getSuffix() : "&cnone")));
