@@ -25,6 +25,10 @@ commands:
     description: Toggle receiving private messages.
     usage: "Usage: /togglemsg"
     aliases: [msgtoggle]
+  ignore:
+    description: Ignore players
+    usage: "Usage: /ignore <player> <ALL|CHAT|MSG>"
+    permission: ezchat.ignore
 permissions:
   ezchat.reload:
     description: Allows use of /ezchat reload
@@ -52,4 +56,7 @@ permissions:
     default: true
   ezchat.togglemsg:
     description: Allows use of /togglemsg
+    default: true
+  ezchat.ignore:
+    description: Allows use of /ignore
     default: true

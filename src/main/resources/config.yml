@@ -56,3 +56,13 @@ private-messages:
   target-disabled-messages: "&cThat player has private messages disabled."
   toggle-enabled: "&aYou can now receive private messages."
   toggle-disabled: "&cYou will no longer receive private messages."
+
+ignore:
+  enabled-all: "&cYou are now ignoring {player}."
+  enabled-chat: "&cYou will no longer see chat messages from {player}."
+  enabled-msg: "&cYou will no longer receive private messages from {player}."
+  disabled: "&aYou are no longer ignoring {player}."
+  player-not-found: "&cPlayer not found."
+  cannot-ignore-self: "&cYou cannot ignore yourself."
+  sender-ignored: "&cThat player is ignoring you."
+  no-permission: "&cYou do not have permission."

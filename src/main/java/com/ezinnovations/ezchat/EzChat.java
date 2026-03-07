@@ -1,11 +1,13 @@
 package com.ezinnovations.ezchat;
 
 import com.ezinnovations.ezchat.commands.ChatToggleCommand;
+import com.ezinnovations.ezchat.commands.IgnoreCommand;
 import com.ezinnovations.ezchat.commands.MessageCommand;
 import com.ezinnovations.ezchat.commands.ReplyCommand;
 import com.ezinnovations.ezchat.commands.ToggleMsgCommand;
 import com.ezinnovations.ezchat.listeners.PaperChatListener;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
+import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.managers.MessageManager;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 import me.clip.placeholderapi.PlaceholderAPI;
@@ -31,6 +33,7 @@ public final class EzChat extends JavaPlugin {
 	private LuckPerms luckPerms;
 	private ChatToggleManager chatToggleManager;
 	private MessageManager messageManager;
+	private IgnoreManager ignoreManager;
 	private FloodgateHook floodgateHook;
 
 
@@ -49,9 +52,11 @@ public final class EzChat extends JavaPlugin {
 		this.chatToggleManager = new ChatToggleManager(this);
 		this.chatToggleManager.load();
 		this.messageManager = new MessageManager();
+		this.ignoreManager = new IgnoreManager(this);
+		this.ignoreManager.load();
 		this.floodgateHook = new FloodgateHook(this);
 
-		getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.chatToggleManager, this.floodgateHook), this);
+		getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.chatToggleManager, this.ignoreManager, this.floodgateHook), this);
 
 		if (getCommand("togglechat") != null) {
 			getCommand("togglechat").setExecutor(new ChatToggleCommand(this, this.chatToggleManager));
@@ -60,13 +65,13 @@ public final class EzChat extends JavaPlugin {
 		}
 
 		if (getCommand("msg") != null) {
-			getCommand("msg").setExecutor(new MessageCommand(this, this.messageManager, this.chatToggleManager));
+			getCommand("msg").setExecutor(new MessageCommand(this, this.messageManager, this.chatToggleManager, this.ignoreManager));
 		} else {
 			getLogger().warning("[EzChat] Failed to register /msg command.");
 		}
 
 		if (getCommand("reply") != null) {
-			getCommand("reply").setExecutor(new ReplyCommand(this, this.messageManager, this.chatToggleManager));
+			getCommand("reply").setExecutor(new ReplyCommand(this, this.messageManager, this.chatToggleManager, this.ignoreManager));
 		} else {
 			getLogger().warning("[EzChat] Failed to register /reply command.");
 		}
@@ -75,6 +80,12 @@ public final class EzChat extends JavaPlugin {
 			getCommand("togglemsg").setExecutor(new ToggleMsgCommand(this, this.chatToggleManager));
 		} else {
 			getLogger().warning("[EzChat] Failed to register /togglemsg command.");
+		}
+
+		if (getCommand("ignore") != null) {
+			getCommand("ignore").setExecutor(new IgnoreCommand(this, this.ignoreManager));
+		} else {
+			getLogger().warning("[EzChat] Failed to register /ignore command.");
 		}
 
 		final String[] chatPlugins = {"EssentialsChat", "VentureChat", "HeroChat", "DeluxeChat", "ChatManager", "ChatEx", "UltraChat", "TownyChat"};
@@ -89,6 +100,10 @@ public final class EzChat extends JavaPlugin {
 	public void onDisable() {
 		if (this.chatToggleManager != null) {
 			this.chatToggleManager.save();
+		}
+
+		if (this.ignoreManager != null) {
+			this.ignoreManager.save();
 		}
 	}
 
