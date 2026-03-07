@@ -53,3 +53,6 @@ private-messages:
   player-not-found: "&cPlayer not found."
   cannot-message-self: "&cYou cannot message yourself."
   reply-no-target: "&cYou have nobody to reply to."
+  target-disabled-messages: "&cThat player has private messages disabled."
+  toggle-enabled: "&aYou can now receive private messages."
+  toggle-disabled: "&cYou will no longer receive private messages."
