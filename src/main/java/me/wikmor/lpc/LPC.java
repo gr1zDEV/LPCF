@@ -22,6 +22,7 @@ public final class LPC extends JavaPlugin {
 
 	private LuckPerms luckPerms;
 	private ChatToggleManager chatToggleManager;
+	private FloodgateHook floodgateHook;
 
 
 	@Override
@@ -38,8 +39,9 @@ public final class LPC extends JavaPlugin {
 
 		this.chatToggleManager = new ChatToggleManager(this);
 		this.chatToggleManager.load();
+		this.floodgateHook = new FloodgateHook(this);
 
-		getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.chatToggleManager), this);
+		getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.chatToggleManager, this.floodgateHook), this);
 
 		if (getCommand("chattoggle") != null) {
 			getCommand("chattoggle").setExecutor(new ChatToggleCommand(this, this.chatToggleManager));

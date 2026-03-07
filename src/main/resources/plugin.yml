@@ -6,7 +6,7 @@ author: ${author}
 api-version: 1.21
 folia-supported: true
 depend: [LuckPerms]
-softdepend: [PlaceholderAPI]
+softdepend: [PlaceholderAPI, floodgate, Geyser-Spigot]
 commands:
   lpc:
     description: LPC commands.
