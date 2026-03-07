@@ -14,12 +14,12 @@
 # {message-color} - the player's or the group's message color
 #
 # Color codes: Use & for colors (&a, &b, etc.) and &#rrggbb for hex colors.
-# Permissions: lpc.reload, lpc.clearchat, lpc.debug, lpc.colorcodes, lpc.rgbcodes
+# Permissions: ezchat.reload, ezchat.clearchat, ezchat.debug, ezchat.colorcodes, ezchat.rgbcodes
 #
 # Commands:
-#   /lpc reload - Reload configuration
-#   /lpc clear - Clear chat for all players
-#   /lpc debug <player> - Show resolved prefix/suffix info for a player
+#   /ezchat reload - Reload configuration
+#   /ezchat clear - Clear chat for all players
+#   /ezchat debug <player> - Show resolved prefix/suffix info for a player
 #
 # More information: https://www.spigotmc.org/resources/68965
 
@@ -36,7 +36,7 @@ group-formats:
 #  default: "{prefix}{name}&r: {message}"
 #  admin: "&c[Admin] {prefix}{name}&r: {message}"
 
-# Message shown after /lpc clear
+# Message shown after /ezchat clear
 clear-chat-message: "&7Chat has been cleared by a staff member."
 
 # /chattoggle messages

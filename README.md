@@ -12,10 +12,10 @@ It gives you a configurable chat pipeline with group-aware formats, optional Pla
 - Group-specific format overrides (`group-formats.<primary-group>`).
 - Placeholder-ready formats (native EzChat placeholders + optional PlaceholderAPI placeholders).
 - Fine-grained player color permissions:
-  - `lpc.colorcodes` for legacy `&` colors.
-  - `lpc.rgbcodes` for hex/RGB colors.
+  - `ezchat.colorcodes` for legacy `&` colors.
+  - `ezchat.rgbcodes` for hex/RGB colors.
 - `/chattoggle` with persistent toggle state in `plugins/EzChat/toggles.yml`.
-- `/lpc debug <player>` output for fast troubleshooting.
+- `/ezchat debug <player>` output for fast troubleshooting.
 - Floodgate hook for Bedrock detection (graceful fallback if Floodgate is absent).
 - Paper `AsyncChatEvent` integration and Folia support.
 
@@ -39,17 +39,17 @@ It gives you a configurable chat pipeline with group-aware formats, optional Pla
 4. *(Optional)* Install **PlaceholderAPI** for PAPI format placeholders.
 5. Start or restart the server.
 6. Edit `plugins/EzChat/config.yml`.
-7. Run `/lpc reload` to apply config changes.
+7. Run `/ezchat reload` to apply config changes.
 
 ---
 
 ## Commands
 
-### `/lpc`
+### `/ezchat`
 
-- `/lpc reload` — reloads `config.yml`.
-- `/lpc clear` — clears chat and broadcasts `clear-chat-message`.
-- `/lpc debug <player>` — displays resolved LuckPerms metadata and relevant plugin state.
+- `/ezchat reload` — reloads `config.yml`.
+- `/ezchat clear` — clears chat and broadcasts `clear-chat-message`.
+- `/ezchat debug <player>` — displays resolved LuckPerms metadata and relevant plugin state.
 
 ### `/chattoggle`
 
@@ -59,12 +59,12 @@ It gives you a configurable chat pipeline with group-aware formats, optional Pla
 
 ## Permissions
 
-- `lpc.reload` — use `/lpc reload` *(default: op)*
-- `lpc.clearchat` — use `/lpc clear` *(default: op)*
-- `lpc.debug` — use `/lpc debug` *(default: op)*
-- `lpc.chattoggle` — use `/chattoggle` *(default: true)*
-- `lpc.colorcodes` — allow legacy `&` color codes in player message input *(default: false)*
-- `lpc.rgbcodes` — allow hex/RGB color codes in player message input *(default: false)*
+- `ezchat.reload` — use `/ezchat reload` *(default: op)*
+- `ezchat.clearchat` — use `/ezchat clear` *(default: op)*
+- `ezchat.debug` — use `/ezchat debug` *(default: op)*
+- `ezchat.chattoggle` — use `/chattoggle` *(default: true)*
+- `ezchat.colorcodes` — allow legacy `&` color codes in player message input *(default: false)*
+- `ezchat.rgbcodes` — allow hex/RGB color codes in player message input *(default: false)*
 
 ---
 
@@ -109,9 +109,9 @@ chat-format: "{prefix}{username-color}{name}&r: {message-color}{message}"
 
 ### Player message color rules
 
-- Has **both** `lpc.colorcodes` + `lpc.rgbcodes` → legacy + hex accepted.
-- Has **only** `lpc.colorcodes` → legacy accepted, hex removed.
-- Has **only** `lpc.rgbcodes` → hex accepted, legacy removed.
+- Has **both** `ezchat.colorcodes` + `ezchat.rgbcodes` → legacy + hex accepted.
+- Has **only** `ezchat.colorcodes` → legacy accepted, hex removed.
+- Has **only** `ezchat.rgbcodes` → hex accepted, legacy removed.
 - Has **neither** → all color codes removed.
 
 ---
@@ -120,7 +120,7 @@ chat-format: "{prefix}{username-color}{name}&r: {message-color}{message}"
 
 - **Prefixes/suffixes missing**
   - Verify LuckPerms metadata exists for the player/group.
-  - Run `/lpc debug <player>` and inspect resolved values.
+  - Run `/ezchat debug <player>` and inspect resolved values.
 
 - **Placeholders not expanding**
   - Verify PlaceholderAPI is installed and expansions are available.
@@ -129,7 +129,7 @@ chat-format: "{prefix}{username-color}{name}&r: {message-color}{message}"
   - Disable chat formatting in other chat plugins (EssentialsChat, VentureChat, etc.).
 
 - **Color permissions not behaving as expected**
-  - Confirm the player’s effective permissions for `lpc.colorcodes` and `lpc.rgbcodes`.
+  - Confirm the player’s effective permissions for `ezchat.colorcodes` and `ezchat.rgbcodes`.
 
 ---
 

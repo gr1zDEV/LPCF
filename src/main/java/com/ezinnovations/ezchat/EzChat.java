@@ -70,13 +70,13 @@ public final class EzChat extends JavaPlugin {
 
 	@Override
 	public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
-		if (args.length == 1 && "reload".equals(args[0]) && sender.hasPermission("lpc.reload")) {
+		if (args.length == 1 && "reload".equals(args[0]) && sender.hasPermission("ezchat.reload")) {
 			reloadConfig();
 			sender.sendMessage(colorize("&aEzChat has been reloaded."));
 			return true;
 		}
 
-		if (args.length == 1 && "clear".equals(args[0]) && sender.hasPermission("lpc.clearchat")) {
+		if (args.length == 1 && "clear".equals(args[0]) && sender.hasPermission("ezchat.clearchat")) {
 			for (final Player player : getServer().getOnlinePlayers()) {
 				for (int i = 0; i < 100; i++) {
 					player.sendMessage("");
@@ -87,7 +87,7 @@ public final class EzChat extends JavaPlugin {
 			return true;
 		}
 
-		if (args.length == 2 && "debug".equals(args[0]) && sender.hasPermission("lpc.debug")) {
+		if (args.length == 2 && "debug".equals(args[0]) && sender.hasPermission("ezchat.debug")) {
 			final Player target = getServer().getPlayer(args[1]);
 			if (target == null) {
 				sender.sendMessage(colorize("&cPlayer not found."));
@@ -108,8 +108,8 @@ public final class EzChat extends JavaPlugin {
 			sender.sendMessage(colorize("&7Message-color: &f" + (debugMeta.getMetaValue("message-color") != null ? debugMeta.getMetaValue("message-color") : "&cnone")));
 			sender.sendMessage(colorize("&7Group format: &f" + (getConfig().getString("group-formats." + debugMeta.getPrimaryGroup()) != null ? "group-formats." + debugMeta.getPrimaryGroup() : "chat-format (default)")));
 			sender.sendMessage(colorize("&7PAPI: &f" + (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI") ? "&ahooked" : "&cnot found")));
-			sender.sendMessage(colorize("&7Has lpc.colorcodes: &f" + target.hasPermission("lpc.colorcodes")));
-			sender.sendMessage(colorize("&7Has lpc.rgbcodes: &f" + target.hasPermission("lpc.rgbcodes")));
+			sender.sendMessage(colorize("&7Has ezchat.colorcodes: &f" + target.hasPermission("ezchat.colorcodes")));
+			sender.sendMessage(colorize("&7Has ezchat.rgbcodes: &f" + target.hasPermission("ezchat.rgbcodes")));
 			return true;
 		}
 
@@ -120,12 +120,12 @@ public final class EzChat extends JavaPlugin {
 	public List<String> onTabComplete(final CommandSender sender, final Command command, final String alias, final String[] args) {
 		if (args.length == 1) {
 			final List<String> completions = new ArrayList<>();
-			if (sender.hasPermission("lpc.reload")) completions.add("reload");
-			if (sender.hasPermission("lpc.clearchat")) completions.add("clear");
-			if (sender.hasPermission("lpc.debug")) completions.add("debug");
+			if (sender.hasPermission("ezchat.reload")) completions.add("reload");
+			if (sender.hasPermission("ezchat.clearchat")) completions.add("clear");
+			if (sender.hasPermission("ezchat.debug")) completions.add("debug");
 			return completions;
 		}
-		if (args.length == 2 && "debug".equals(args[0]) && sender.hasPermission("lpc.debug")) {
+		if (args.length == 2 && "debug".equals(args[0]) && sender.hasPermission("ezchat.debug")) {
 			return getServer().getOnlinePlayers().stream()
 					.map(Player::getName)
 					.filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
@@ -164,11 +164,11 @@ public final class EzChat extends JavaPlugin {
 	}
 
 	public String processMessage(final Player player, final String message) {
-		if (player.hasPermission("lpc.colorcodes") && player.hasPermission("lpc.rgbcodes")) {
+		if (player.hasPermission("ezchat.colorcodes") && player.hasPermission("ezchat.rgbcodes")) {
 			return colorize(translateHexColorCodes(message));
-		} else if (player.hasPermission("lpc.colorcodes")) {
+		} else if (player.hasPermission("ezchat.colorcodes")) {
 			return colorize(stripHexCodes(message));
-		} else if (player.hasPermission("lpc.rgbcodes")) {
+		} else if (player.hasPermission("ezchat.rgbcodes")) {
 			return stripColorCodes(translateHexColorCodes(message));
 		} else {
 			return stripColorCodes(stripHexCodes(message));
