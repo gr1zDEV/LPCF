@@ -10,6 +10,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
+import java.util.UUID;
+
 public final class PaperChatListener implements Listener {
 
     private final LPC plugin;
@@ -24,7 +26,8 @@ public final class PaperChatListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChat(final AsyncChatEvent event) {
-        event.viewers().removeIf(viewerAudience -> !shouldReceiveAudience(viewerAudience));
+        final UUID senderUuid = event.getPlayer().getUniqueId();
+        event.viewers().removeIf(viewerAudience -> !shouldReceiveAudience(viewerAudience, senderUuid));
 
         final Player player = event.getPlayer();
 
@@ -36,17 +39,17 @@ public final class PaperChatListener implements Listener {
         Component rendered = LegacyComponentSerializer.legacySection().deserialize(finalFormat);
 
         event.renderer((source, sourceDisplayName, msg, audience) ->
-                shouldReceiveAudience(audience) ? rendered : Component.empty());
+                shouldReceiveAudience(audience, senderUuid) ? rendered : Component.empty());
     }
 
-    private boolean shouldReceiveAudience(final Audience audience) {
+    private boolean shouldReceiveAudience(final Audience audience, final UUID senderUuid) {
         if (audience instanceof Player player) {
-            return shouldReceiveChat(player);
+            return shouldReceiveChat(player, senderUuid);
         }
 
         if (audience instanceof ForwardingAudience forwardingAudience) {
             for (final Audience nestedAudience : forwardingAudience.audiences()) {
-                if (!shouldReceiveAudience(nestedAudience)) {
+                if (!shouldReceiveAudience(nestedAudience, senderUuid)) {
                     return false;
                 }
             }
@@ -55,7 +58,11 @@ public final class PaperChatListener implements Listener {
         return true;
     }
 
-    private boolean shouldReceiveChat(final Player player) {
+    private boolean shouldReceiveChat(final Player player, final UUID senderUuid) {
+        if (player.getUniqueId().equals(senderUuid)) {
+            return true;
+        }
+
         if (!chatToggleManager.isChatHidden(player.getUniqueId())) {
             return true;
         }
