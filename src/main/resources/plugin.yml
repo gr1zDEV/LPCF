@@ -14,6 +14,12 @@ commands:
   chattoggle:
     description: Toggle receiving public chat.
     usage: "Usage: /chattoggle"
+  msg:
+    description: Send a private message to a player.
+    usage: "Usage: /msg <player> <message>"
+  reply:
+    description: Reply to your last private message target.
+    usage: "Usage: /reply <message>"
 permissions:
   ezchat.reload:
     description: Allows use of /ezchat reload
@@ -32,4 +38,10 @@ permissions:
     default: false
   ezchat.chattoggle:
     description: Allows use of /chattoggle
+    default: true
+  ezchat.msg:
+    description: Allows use of /msg
+    default: true
+  ezchat.reply:
+    description: Allows use of /reply
     default: true

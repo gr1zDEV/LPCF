@@ -44,3 +44,12 @@ chat-toggle-enabled: "&aChat is now visible."
 chat-toggle-disabled: "&cChat is now hidden."
 no-permission: "&cYou do not have permission."
 players-only: "&cOnly players can use this command."
+
+# Private messaging settings
+private-messages:
+  sent-format: "&8[&aTo {receiver}&8] &f{message}"
+  received-format: "&8[&6From {sender}&8] &f{message}"
+  no-permission: "&cYou do not have permission."
+  player-not-found: "&cPlayer not found."
+  cannot-message-self: "&cYou cannot message yourself."
+  reply-no-target: "&cYou have nobody to reply to."
