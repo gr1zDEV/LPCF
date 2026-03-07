@@ -134,7 +134,7 @@ public final class EzChat extends JavaPlugin {
 		return new ArrayList<>();
 	}
 
-	String buildFormat(final Player player) {
+	public String buildFormat(final Player player) {
 		final CachedMetaData metaData = this.luckPerms.getPlayerAdapter(Player.class).getMetaData(player);
 		final String group = metaData.getPrimaryGroup();
 
@@ -163,7 +163,7 @@ public final class EzChat extends JavaPlugin {
 		return format;
 	}
 
-	String processMessage(final Player player, final String message) {
+	public String processMessage(final Player player, final String message) {
 		if (player.hasPermission("lpc.colorcodes") && player.hasPermission("lpc.rgbcodes")) {
 			return colorize(translateHexColorCodes(message));
 		} else if (player.hasPermission("lpc.colorcodes")) {
@@ -175,7 +175,7 @@ public final class EzChat extends JavaPlugin {
 		}
 	}
 
-	String colorize(final String message) {
+	public String colorize(final String message) {
 		return ChatColor.translateAlternateColorCodes('&', message);
 	}
 
