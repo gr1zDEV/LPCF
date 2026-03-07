@@ -30,7 +30,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: lpc-jar
+          name: ezchat-jar
           path: target/*.jar
 
       - name: Create GitHub release
