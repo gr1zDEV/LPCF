@@ -1,82 +1,158 @@
-# EzChat
+# EzChat Wiki
 
-EzChat is a lightweight, LuckPerms-powered chat formatter for **Paper/Folia 1.21+**.
+> A lightweight, LuckPerms-powered chat system for **Paper/Folia 1.21+**.
 
-It gives you a configurable chat pipeline with group-aware formats, optional PlaceholderAPI expansion, message color permissions, and per-player chat visibility toggles.
-
----
-
-## What’s New / Current Feature Set
-
-- LuckPerms metadata formatting (`prefix`, `suffix`, stacked prefixes/suffixes, meta colors).
-- Group-specific format overrides (`group-formats.<primary-group>`).
-- Placeholder-ready formats (native EzChat placeholders + optional PlaceholderAPI placeholders).
-- Fine-grained player color permissions:
-  - `ezchat.colorcodes` for legacy `&` colors.
-  - `ezchat.rgbcodes` for hex/RGB colors.
-- `/chattoggle` with persistent toggle state in `plugins/EzChat/toggles.yml`.
-- `/ezchat debug <player>` output for fast troubleshooting.
-- Floodgate hook for Bedrock detection (graceful fallback if Floodgate is absent).
-- Paper `AsyncChatEvent` integration and Folia support.
+EzChat handles **global chat formatting**, **private messaging**, **ignore controls**, and **player-side visibility toggles** in one plugin.
 
 ---
 
-## Compatibility
+## 📚 Table of Contents
+
+- [Overview](#-overview)
+- [Feature Index](#-feature-index)
+- [Compatibility & Dependencies](#-compatibility--dependencies)
+- [Installation](#-installation)
+- [Commands](#-commands)
+- [Permissions](#-permissions)
+- [Configuration Guide](#-configuration-guide)
+- [Storage Files](#-storage-files)
+- [Troubleshooting](#-troubleshooting)
+- [Build from Source](#-build-from-source)
+- [Releases](#-releases)
+
+---
+
+## 🔎 Overview
+
+EzChat is designed to replace fragmented chat tooling with a single, focused plugin that supports:
+
+- LuckPerms-aware chat metadata (prefix/suffix + meta colors).
+- Group format overrides.
+- Permission-based player message coloring.
+- Per-player chat visibility toggles.
+- Built-in private messaging (`/msg`, `/reply`, `/togglemsg`).
+- Ignore modes for chat and/or private messages (`/ignore`).
+
+---
+
+## ✅ Feature Index
+
+### Global Chat Formatting
+
+- Uses `AsyncChatEvent` on Paper for modern chat handling.
+- Supports LuckPerms metadata:
+  - `{prefix}` / `{suffix}`
+  - `{prefixes}` / `{suffixes}` (stacked values)
+  - `{username-color}` / `{message-color}` meta
+- Supports global `chat-format` with placeholders.
+- Supports per-group overrides via `group-formats.<primary-group>`.
+- Optional PlaceholderAPI parsing in format strings when PlaceholderAPI is installed.
+
+### Message Color Permission Rules
+
+- `ezchat.colorcodes` enables legacy `&` color/style codes.
+- `ezchat.rgbcodes` enables hex/RGB color codes (`&#rrggbb` and `&x&f&f...`).
+- If players have neither permission, color codes are stripped.
+
+### Player Chat Visibility
+
+- `/togglechat` (alias `/chattoggle`) lets players hide/show global chat.
+- State persists in `plugins/EzChat/toggles.yml`.
+
+### Private Messaging Suite
+
+- `/msg <player> <message>` for direct messages.
+- `/reply <message>` uses conversation tracking to reply quickly.
+- `/togglemsg` lets players opt out of private messages.
+- Customizable sent/received formats and response messages in config.
+- Rejects self-messaging and blocked messaging scenarios.
+
+### Ignore System
+
+- `/ignore <player> <ALL|CHAT|MSG>` toggles ignore mode per target.
+- `ALL`: block both public chat and private messages.
+- `CHAT`: block public chat only.
+- `MSG`: block private messages only.
+- State persists in `plugins/EzChat/ignores.yml`.
+
+### Admin & Diagnostics
+
+- `/ezchat reload` reloads configuration.
+- `/ezchat clear` clears chat and broadcasts a configurable clear message.
+- `/ezchat debug <player>` displays resolved metadata and processing context.
+- Warns in console when common chat-formatting plugins are detected to help prevent duplicate formatting.
+
+### Bedrock Awareness (Optional)
+
+- Floodgate hook is auto-detected when available.
+- If Floodgate is missing/incompatible, EzChat falls back safely without crashing.
+
+---
+
+## 🧩 Compatibility & Dependencies
 
 - **Platform:** Paper / Folia
-- **API version:** 1.21
+- **API Version:** 1.21
 - **Java:** 21
-- **Required dependency:** LuckPerms
-- **Optional dependencies:** PlaceholderAPI, floodgate, Geyser-Spigot
+- **Required:** LuckPerms
+- **Optional:** PlaceholderAPI, floodgate, Geyser-Spigot
 
 ---
 
-## Installation
+## 🚀 Installation
 
-1. Download the latest `EzChat-<version>.jar` from Releases.
-2. Put it in your server `plugins/` folder.
-3. Ensure **LuckPerms** is installed.
-4. *(Optional)* Install **PlaceholderAPI** for PAPI format placeholders.
-5. Start or restart the server.
-6. Edit `plugins/EzChat/config.yml`.
-7. Run `/ezchat reload` to apply config changes.
-
----
-
-## Commands
-
-### `/ezchat`
-
-- `/ezchat reload` — reloads `config.yml`.
-- `/ezchat clear` — clears chat and broadcasts `clear-chat-message`.
-- `/ezchat debug <player>` — displays resolved LuckPerms metadata and relevant plugin state.
-
-### `/chattoggle`
-
-- Toggles whether that player receives public chat messages.
+1. Build or download `EzChat-<version>.jar`.
+2. Place it in your server `plugins/` directory.
+3. Install **LuckPerms** (required).
+4. (Optional) Install **PlaceholderAPI**.
+5. (Optional) Install **floodgate/Geyser** for Bedrock detection support.
+6. Start/restart server.
+7. Edit `plugins/EzChat/config.yml`.
+8. Run `/ezchat reload`.
 
 ---
 
-## Permissions
+## ⌨️ Commands
 
-- `ezchat.reload` — use `/ezchat reload` *(default: op)*
-- `ezchat.clearchat` — use `/ezchat clear` *(default: op)*
-- `ezchat.debug` — use `/ezchat debug` *(default: op)*
-- `ezchat.chattoggle` — use `/chattoggle` *(default: true)*
-- `ezchat.colorcodes` — allow legacy `&` color codes in player message input *(default: false)*
-- `ezchat.rgbcodes` — allow hex/RGB color codes in player message input *(default: false)*
+| Command | Description |
+|---|---|
+| `/ezchat reload` | Reload `config.yml`. |
+| `/ezchat clear` | Clears chat and broadcasts `clear-chat-message`. |
+| `/ezchat debug <player>` | Shows resolved LuckPerms metadata and EzChat context. |
+| `/togglechat` (`/chattoggle`) | Toggle receiving global chat messages. |
+| `/msg <player> <message>` | Send a private message. |
+| `/reply <message>` | Reply to your last DM contact. |
+| `/togglemsg` (`/msgtoggle`) | Toggle whether you can receive DMs. |
+| `/ignore <player> <ALL|CHAT|MSG>` | Toggle ignore mode for a target player. |
 
 ---
 
-## Configuration
+## 🔐 Permissions
 
-Default:
+| Permission | Default | Description |
+|---|---:|---|
+| `ezchat.reload` | `op` | Use `/ezchat reload`. |
+| `ezchat.clearchat` | `op` | Use `/ezchat clear`. |
+| `ezchat.debug` | `op` | Use `/ezchat debug`. |
+| `ezchat.chattoggle` | `true` | Use `/togglechat` / `/chattoggle`. |
+| `ezchat.msg` | `true` | Use `/msg`. |
+| `ezchat.reply` | `true` | Use `/reply`. |
+| `ezchat.togglemsg` | `true` | Use `/togglemsg` / `/msgtoggle`. |
+| `ezchat.ignore` | `true` | Use `/ignore`. |
+| `ezchat.colorcodes` | `false` | Allow legacy `&` color/style codes in chat input. |
+| `ezchat.rgbcodes` | `false` | Allow RGB/hex colors in chat input. |
+
+---
+
+## 🛠 Configuration Guide
+
+### Core format
 
 ```yml
 chat-format: "{prefix}{name}&r: {message}"
 ```
 
-### Supported placeholders
+### Built-in placeholders
 
 - `{message}`
 - `{name}`
@@ -89,9 +165,9 @@ chat-format: "{prefix}{name}&r: {message}"
 - `{username-color}`
 - `{message-color}`
 
-If PlaceholderAPI is installed, PAPI placeholders inside format strings are also resolved.
+If PlaceholderAPI is installed, PAPI placeholders in format strings are also resolved.
 
-### Group-specific formats
+### Group-specific format overrides
 
 ```yml
 group-formats:
@@ -99,7 +175,7 @@ group-formats:
   admin: "&c[Admin] {prefix}{name}&r: {message}"
 ```
 
-### Example formats
+### Format examples
 
 ```yml
 chat-format: "[{world}] {prefix}{name}&r: {message}"
@@ -107,39 +183,69 @@ chat-format: "{prefix}{name}{suffix}&r: {message}"
 chat-format: "{prefix}{username-color}{name}&r: {message-color}{message}"
 ```
 
-### Player message color rules
+### Private message settings
+
+```yml
+private-messages:
+  sent-format: "&8[&aTo {receiver}&8] &f{message}"
+  received-format: "&8[&6From {sender}&8] &f{message}"
+```
+
+### Ignore message settings
+
+```yml
+ignore:
+  enabled-all: "&cYou are now ignoring {player}."
+  enabled-chat: "&cYou will no longer see chat messages from {player}."
+  enabled-msg: "&cYou will no longer receive private messages from {player}."
+  disabled: "&aYou are no longer ignoring {player}."
+```
+
+### Player message color behavior
 
 - Has **both** `ezchat.colorcodes` + `ezchat.rgbcodes` → legacy + hex accepted.
 - Has **only** `ezchat.colorcodes` → legacy accepted, hex removed.
 - Has **only** `ezchat.rgbcodes` → hex accepted, legacy removed.
-- Has **neither** → all color codes removed.
+- Has **neither** permission → all color codes removed.
 
 ---
 
-## Troubleshooting
+## 💾 Storage Files
+
+- `plugins/EzChat/config.yml` — main plugin behavior/messages.
+- `plugins/EzChat/toggles.yml` — chat hidden + private message toggle states.
+- `plugins/EzChat/ignores.yml` — ignore relationships and ignore types.
+
+---
+
+## 🧯 Troubleshooting
 
 - **Prefixes/suffixes missing**
-  - Verify LuckPerms metadata exists for the player/group.
-  - Run `/ezchat debug <player>` and inspect resolved values.
+  - Confirm LuckPerms metadata exists.
+  - Use `/ezchat debug <player>` to inspect resolved values.
 
 - **Placeholders not expanding**
-  - Verify PlaceholderAPI is installed and expansions are available.
+  - Install PlaceholderAPI and the needed expansions.
 
-- **Duplicate formatting/messages**
-  - Disable chat formatting in other chat plugins (EssentialsChat, VentureChat, etc.).
+- **Players report duplicated chat format**
+  - Disable format features in other chat plugins (EssentialsChat, VentureChat, etc.).
 
-- **Color permissions not behaving as expected**
-  - Confirm the player’s effective permissions for `ezchat.colorcodes` and `ezchat.rgbcodes`.
+- **DMs fail unexpectedly**
+  - Check whether target has `/togglemsg` enabled.
+  - Check ignore mode (`ALL` or `MSG`).
+
+- **Color permissions not applying**
+  - Verify effective permissions for `ezchat.colorcodes` and `ezchat.rgbcodes`.
 
 ---
 
-## Build from Source
+## 🏗 Build from Source
 
 ```bash
 mvn clean package
 ```
 
-Output JAR:
+Output artifact:
 
 ```text
 target/EzChat-<version>.jar
@@ -147,10 +253,9 @@ target/EzChat-<version>.jar
 
 ---
 
-## Releases
+## 📦 Releases
 
-This repository includes a GitHub Actions release workflow.
+GitHub Actions release workflow supports tags:
 
-Supported tag patterns:
 - `v*` (example: `v3.7.1`)
 - `x.y.z` (example: `3.7.1`)
