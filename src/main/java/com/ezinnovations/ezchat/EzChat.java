@@ -53,10 +53,10 @@ public final class EzChat extends JavaPlugin {
 
 		getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.chatToggleManager, this.floodgateHook), this);
 
-		if (getCommand("chattoggle") != null) {
-			getCommand("chattoggle").setExecutor(new ChatToggleCommand(this, this.chatToggleManager));
+		if (getCommand("togglechat") != null) {
+			getCommand("togglechat").setExecutor(new ChatToggleCommand(this, this.chatToggleManager));
 		} else {
-			getLogger().warning("[EzChat] Failed to register /chattoggle command.");
+			getLogger().warning("[EzChat] Failed to register /togglechat command.");
 		}
 
 		if (getCommand("msg") != null) {
