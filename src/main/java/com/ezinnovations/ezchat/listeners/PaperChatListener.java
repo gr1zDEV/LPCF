@@ -2,6 +2,7 @@ package com.ezinnovations.ezchat.listeners;
 
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
+import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 
@@ -20,12 +21,14 @@ import java.util.UUID;
 public final class PaperChatListener implements Listener {
 
     private final EzChat plugin;
+    private final FeatureManager featureManager;
     private final ChatToggleManager chatToggleManager;
     private final IgnoreManager ignoreManager;
     private final FloodgateHook floodgateHook;
 
-    public PaperChatListener(final EzChat plugin, final ChatToggleManager chatToggleManager, final IgnoreManager ignoreManager, final FloodgateHook floodgateHook) {
+    public PaperChatListener(final EzChat plugin, final FeatureManager featureManager, final ChatToggleManager chatToggleManager, final IgnoreManager ignoreManager, final FloodgateHook floodgateHook) {
         this.plugin = plugin;
+        this.featureManager = featureManager;
         this.chatToggleManager = chatToggleManager;
         this.ignoreManager = ignoreManager;
         this.floodgateHook = floodgateHook;
@@ -33,6 +36,10 @@ public final class PaperChatListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChat(final AsyncChatEvent event) {
+        if (!featureManager.isPublicChatEnabled()) {
+            return;
+        }
+
         final UUID senderUuid = event.getPlayer().getUniqueId();
         event.viewers().removeIf(viewerAudience -> !shouldReceiveAudience(viewerAudience, senderUuid));
 
@@ -70,11 +77,12 @@ public final class PaperChatListener implements Listener {
             return true;
         }
 
-        if (ignoreManager.isIgnoring(player.getUniqueId(), senderUuid, IgnoreManager.IgnoreType.CHAT)) {
+        if (featureManager.isIgnoreEnabled()
+                && ignoreManager.isIgnoring(player.getUniqueId(), senderUuid, IgnoreManager.IgnoreType.CHAT)) {
             return false;
         }
 
-        if (!chatToggleManager.isChatHidden(player.getUniqueId())) {
+        if (!featureManager.isChatToggleEnabled() || !chatToggleManager.isChatHidden(player.getUniqueId())) {
             return true;
         }
 

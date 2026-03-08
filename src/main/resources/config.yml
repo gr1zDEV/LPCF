@@ -23,6 +23,27 @@
 #
 # More information: https://www.spigotmc.org/resources/68965
 
+features:
+  public-chat:
+    enabled: true
+  chat-toggle:
+    enabled: true
+  private-messages:
+    enabled: true
+  private-message-toggle:
+    enabled: true
+  ignore:
+    enabled: true
+  mail:
+    enabled: true
+  mail-toggle:
+    enabled: true
+  unread-login-notify:
+    enabled: true
+
+general:
+  feature-disabled: "&cThat feature is currently disabled."
+
 chat-format: "{prefix}{name}&r: {message}"
 
 # Examples:

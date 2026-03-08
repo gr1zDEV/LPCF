@@ -2,6 +2,7 @@ package com.ezinnovations.ezchat.commands;
 
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
+import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.managers.MessageManager;
 
@@ -16,12 +17,14 @@ import java.util.stream.Collectors;
 public final class MessageCommand implements CommandExecutor {
 
     private final EzChat plugin;
+    private final FeatureManager featureManager;
     private final MessageManager messageManager;
     private final ChatToggleManager chatToggleManager;
     private final IgnoreManager ignoreManager;
 
-    public MessageCommand(final EzChat plugin, final MessageManager messageManager, final ChatToggleManager chatToggleManager, final IgnoreManager ignoreManager) {
+    public MessageCommand(final EzChat plugin, final FeatureManager featureManager, final MessageManager messageManager, final ChatToggleManager chatToggleManager, final IgnoreManager ignoreManager) {
         this.plugin = plugin;
+        this.featureManager = featureManager;
         this.messageManager = messageManager;
         this.chatToggleManager = chatToggleManager;
         this.ignoreManager = ignoreManager;
@@ -31,6 +34,11 @@ public final class MessageCommand implements CommandExecutor {
     public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
         if (!(sender instanceof final Player player)) {
             sender.sendMessage(plugin.colorize(plugin.getConfig().getString("players-only", "&cOnly players can use this command.")));
+            return true;
+        }
+
+        if (!featureManager.isPrivateMessagesEnabled()) {
+            player.sendMessage(plugin.colorize(featureManager.getFeatureDisabledMessage()));
             return true;
         }
 
@@ -55,12 +63,12 @@ public final class MessageCommand implements CommandExecutor {
             return true;
         }
 
-        if (chatToggleManager.arePrivateMessagesDisabled(receiver.getUniqueId())) {
+        if (featureManager.isPrivateMessageToggleEnabled() && chatToggleManager.arePrivateMessagesDisabled(receiver.getUniqueId())) {
             player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.target-disabled-messages", "&cThat player has private messages disabled.")));
             return true;
         }
 
-        if (ignoreManager.isIgnoring(receiver.getUniqueId(), player.getUniqueId(), IgnoreManager.IgnoreType.MSG)) {
+        if (featureManager.isIgnoreEnabled() && ignoreManager.isIgnoring(receiver.getUniqueId(), player.getUniqueId(), IgnoreManager.IgnoreType.MSG)) {
             player.sendMessage(plugin.colorize(plugin.getConfig().getString("ignore.sender-ignored", "&cThat player is ignoring you.")));
             return true;
         }
