@@ -61,8 +61,12 @@ group-formats:
 clear-chat-message: "&7Chat has been cleared by a staff member."
 
 # /togglechat messages
-chat-toggle-enabled: "&aChat is now visible."
-chat-toggle-disabled: "&cChat is now hidden."
+chat-toggle:
+  enabled: "&aPublic chat is now visible."
+  disabled: "&cPublic chat is now hidden."
+  already-enabled: "&ePublic chat is already visible."
+  already-disabled: "&ePublic chat is already hidden."
+  invalid-usage: "&cUsage: /togglechat [on|off]"
 no-permission: "&cYou do not have permission."
 players-only: "&cOnly players can use this command."
 
@@ -77,6 +81,9 @@ private-messages:
   target-disabled-messages: "&cThat player has private messages disabled."
   toggle-enabled: "&aYou can now receive private messages."
   toggle-disabled: "&cYou will no longer receive private messages."
+  toggle-already-enabled: "&ePrivate messages are already enabled."
+  toggle-already-disabled: "&ePrivate messages are already disabled."
+  toggle-invalid-usage: "&cUsage: /togglemsg [on|off]"
 
 ignore:
   enabled-all: "&cYou are now ignoring {player}."
@@ -99,6 +106,9 @@ mail:
   target-ignoring-mail: "&cThat player is ignoring your mail."
   toggle-enabled: "&aYou can now receive mail."
   toggle-disabled: "&cYou will no longer receive mail."
+  toggle-already-enabled: "&eMail is already enabled."
+  toggle-already-disabled: "&eMail is already disabled."
+  toggle-invalid-usage: "&cUsage: /togglemail [on|off]"
   inbox-empty: "&7Your inbox is empty."
   unread-empty: "&7You have no unread mail."
   sent-empty: "&7You have not sent any mail."
