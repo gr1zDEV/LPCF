@@ -108,6 +108,36 @@ public final class ChatToggleManager {
         return privateMessagesDisabledPlayers.contains(uuid);
     }
 
+    public boolean setChatHidden(final UUID uuid, final boolean hidden) {
+        final boolean changed;
+        if (hidden) {
+            changed = hiddenChatPlayers.add(uuid);
+        } else {
+            changed = hiddenChatPlayers.remove(uuid);
+        }
+
+        if (changed) {
+            save();
+        }
+
+        return changed;
+    }
+
+    public boolean setPrivateMessagesDisabled(final UUID uuid, final boolean disabled) {
+        final boolean changed;
+        if (disabled) {
+            changed = privateMessagesDisabledPlayers.add(uuid);
+        } else {
+            changed = privateMessagesDisabledPlayers.remove(uuid);
+        }
+
+        if (changed) {
+            save();
+        }
+
+        return changed;
+    }
+
     public boolean togglePrivateMessages(final UUID uuid) {
         final boolean nowDisabled;
         if (privateMessagesDisabledPlayers.contains(uuid)) {
@@ -123,6 +153,21 @@ public final class ChatToggleManager {
 
     public boolean isMailDisabled(final UUID uuid) {
         return mailDisabledPlayers.contains(uuid);
+    }
+
+    public boolean setMailDisabled(final UUID uuid, final boolean disabled) {
+        final boolean changed;
+        if (disabled) {
+            changed = mailDisabledPlayers.add(uuid);
+        } else {
+            changed = mailDisabledPlayers.remove(uuid);
+        }
+
+        if (changed) {
+            save();
+        }
+
+        return changed;
     }
 
     public boolean toggleMail(final UUID uuid) {

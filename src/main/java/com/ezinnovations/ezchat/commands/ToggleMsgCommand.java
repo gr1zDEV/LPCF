@@ -38,8 +38,35 @@ public final class ToggleMsgCommand implements CommandExecutor {
             return true;
         }
 
-        final boolean nowDisabled = chatToggleManager.togglePrivateMessages(player.getUniqueId());
-        if (nowDisabled) {
+        final ToggleMode mode = ToggleModeParser.parse(args);
+        if (mode == null) {
+            player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.toggle-invalid-usage", "&cUsage: /togglemsg [on|off]")));
+            return true;
+        }
+
+        if (mode == ToggleMode.TOGGLE) {
+            final boolean nowDisabled = chatToggleManager.togglePrivateMessages(player.getUniqueId());
+            if (nowDisabled) {
+                player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.toggle-disabled", "&cYou will no longer receive private messages.")));
+            } else {
+                player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.toggle-enabled", "&aYou can now receive private messages.")));
+            }
+            return true;
+        }
+
+        final boolean shouldDisable = mode == ToggleMode.OFF;
+        final boolean currentlyDisabled = chatToggleManager.arePrivateMessagesDisabled(player.getUniqueId());
+        if (shouldDisable == currentlyDisabled) {
+            if (shouldDisable) {
+                player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.toggle-already-disabled", "&ePrivate messages are already disabled.")));
+            } else {
+                player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.toggle-already-enabled", "&ePrivate messages are already enabled.")));
+            }
+            return true;
+        }
+
+        chatToggleManager.setPrivateMessagesDisabled(player.getUniqueId(), shouldDisable);
+        if (shouldDisable) {
             player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.toggle-disabled", "&cYou will no longer receive private messages.")));
         } else {
             player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.toggle-enabled", "&aYou can now receive private messages.")));

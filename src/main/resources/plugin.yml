@@ -13,8 +13,7 @@ commands:
     usage: "Usage: /ezchat <reload|clear|debug>"
   togglechat:
     description: Toggle receiving public chat.
-    usage: "Usage: /togglechat"
-    aliases: [chattoggle]
+    usage: "Usage: /togglechat [on|off]"
   msg:
     description: Send a private message to a player.
     usage: "Usage: /msg <player> <message>"
@@ -23,8 +22,7 @@ commands:
     usage: "Usage: /reply <message>"
   togglemsg:
     description: Toggle receiving private messages.
-    usage: "Usage: /togglemsg"
-    aliases: [msgtoggle]
+    usage: "Usage: /togglemsg [on|off]"
   ignore:
     description: Ignore players
     usage: "Usage: /ignore <player> <ALL|CHAT|MSG|MAIL>"
@@ -35,7 +33,7 @@ commands:
     permission: ezchat.mail
   togglemail:
     description: Toggle receiving mail
-    usage: "Usage: /togglemail"
+    usage: "Usage: /togglemail [on|off]"
     permission: ezchat.togglemail
 permissions:
   ezchat.reload:
