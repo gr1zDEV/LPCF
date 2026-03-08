@@ -1,6 +1,7 @@
 package com.ezinnovations.ezchat.listeners;
 
 import com.ezinnovations.ezchat.EzChat;
+import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.MailManager;
 
 import org.bukkit.entity.Player;
@@ -11,16 +12,18 @@ import org.bukkit.event.player.PlayerJoinEvent;
 public final class PlayerJoinListener implements Listener {
 
     private final EzChat plugin;
+    private final FeatureManager featureManager;
     private final MailManager mailManager;
 
-    public PlayerJoinListener(final EzChat plugin, final MailManager mailManager) {
+    public PlayerJoinListener(final EzChat plugin, final FeatureManager featureManager, final MailManager mailManager) {
         this.plugin = plugin;
+        this.featureManager = featureManager;
         this.mailManager = mailManager;
     }
 
     @EventHandler
     public void onJoin(final PlayerJoinEvent event) {
-        if (!plugin.getConfig().getBoolean("mail.unread-login-notify.enabled", true)) {
+        if (!featureManager.isMailEnabled() || !featureManager.isUnreadLoginNotifyEnabled()) {
             return;
         }
 

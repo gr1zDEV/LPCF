@@ -1,6 +1,7 @@
 package com.ezinnovations.ezchat.commands;
 
 import com.ezinnovations.ezchat.EzChat;
+import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 
 import org.bukkit.OfflinePlayer;
@@ -14,10 +15,12 @@ import java.util.Locale;
 public final class IgnoreCommand implements CommandExecutor {
 
     private final EzChat plugin;
+    private final FeatureManager featureManager;
     private final IgnoreManager ignoreManager;
 
-    public IgnoreCommand(final EzChat plugin, final IgnoreManager ignoreManager) {
+    public IgnoreCommand(final EzChat plugin, final FeatureManager featureManager, final IgnoreManager ignoreManager) {
         this.plugin = plugin;
+        this.featureManager = featureManager;
         this.ignoreManager = ignoreManager;
     }
 
@@ -25,6 +28,11 @@ public final class IgnoreCommand implements CommandExecutor {
     public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
         if (!(sender instanceof final Player player)) {
             sender.sendMessage(plugin.colorize(plugin.getConfig().getString("players-only", "&cOnly players can use this command.")));
+            return true;
+        }
+
+        if (!featureManager.isIgnoreEnabled()) {
+            player.sendMessage(plugin.colorize(featureManager.getFeatureDisabledMessage()));
             return true;
         }
 

@@ -2,6 +2,7 @@ package com.ezinnovations.ezchat.commands;
 
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
+import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.managers.MailManager;
 import com.ezinnovations.ezchat.model.MailEntry;
@@ -30,17 +31,20 @@ public final class MailCommand implements CommandExecutor {
     private static final int PAGE_SIZE = 6;
 
     private final EzChat plugin;
+    private final FeatureManager featureManager;
     private final MailManager mailManager;
     private final ChatToggleManager chatToggleManager;
     private final IgnoreManager ignoreManager;
     private final FloodgateHook floodgateHook;
 
     public MailCommand(final EzChat plugin,
+                       final FeatureManager featureManager,
                        final MailManager mailManager,
                        final ChatToggleManager chatToggleManager,
                        final IgnoreManager ignoreManager,
                        final FloodgateHook floodgateHook) {
         this.plugin = plugin;
+        this.featureManager = featureManager;
         this.mailManager = mailManager;
         this.chatToggleManager = chatToggleManager;
         this.ignoreManager = ignoreManager;
@@ -51,6 +55,11 @@ public final class MailCommand implements CommandExecutor {
     public boolean onCommand(final CommandSender sender, final Command command, final String label, final String[] args) {
         if (!(sender instanceof final Player player)) {
             sender.sendMessage(plugin.colorize(plugin.getConfig().getString("players-only", "&cOnly players can use this command.")));
+            return true;
+        }
+
+        if (!featureManager.isMailEnabled()) {
+            player.sendMessage(plugin.colorize(featureManager.getFeatureDisabledMessage()));
             return true;
         }
 
@@ -92,12 +101,13 @@ public final class MailCommand implements CommandExecutor {
             return;
         }
 
-        if (chatToggleManager.isMailDisabled(target.getUniqueId())) {
+        if (featureManager.isMailToggleEnabled() && chatToggleManager.isMailDisabled(target.getUniqueId())) {
             sender.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.target-mail-disabled", "&cThat player has mail disabled.")));
             return;
         }
 
-        if (ignoreManager.isIgnoring(target.getUniqueId(), sender.getUniqueId(), IgnoreManager.IgnoreType.MAIL)) {
+        if (featureManager.isIgnoreEnabled()
+                && ignoreManager.isIgnoring(target.getUniqueId(), sender.getUniqueId(), IgnoreManager.IgnoreType.MAIL)) {
             sender.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.target-ignoring-mail", "&cThat player is ignoring your mail.")));
             return;
         }
