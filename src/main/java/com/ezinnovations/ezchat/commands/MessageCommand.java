@@ -5,6 +5,7 @@ import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.managers.MessageManager;
+import com.ezinnovations.ezchat.service.CommunicationLogService;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -21,13 +22,20 @@ public final class MessageCommand implements CommandExecutor {
     private final MessageManager messageManager;
     private final ChatToggleManager chatToggleManager;
     private final IgnoreManager ignoreManager;
+    private final CommunicationLogService communicationLogService;
 
-    public MessageCommand(final EzChat plugin, final FeatureManager featureManager, final MessageManager messageManager, final ChatToggleManager chatToggleManager, final IgnoreManager ignoreManager) {
+    public MessageCommand(final EzChat plugin,
+                          final FeatureManager featureManager,
+                          final MessageManager messageManager,
+                          final ChatToggleManager chatToggleManager,
+                          final IgnoreManager ignoreManager,
+                          final CommunicationLogService communicationLogService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.messageManager = messageManager;
         this.chatToggleManager = chatToggleManager;
         this.ignoreManager = ignoreManager;
+        this.communicationLogService = communicationLogService;
     }
 
     @Override
@@ -88,6 +96,7 @@ public final class MessageCommand implements CommandExecutor {
                 .replace("{message}", message)));
 
         messageManager.updateConversation(player, receiver);
+        communicationLogService.logPrivateMessage(player.getUniqueId(), player.getName(), receiver.getUniqueId(), receiver.getName(), message);
         return true;
     }
 }

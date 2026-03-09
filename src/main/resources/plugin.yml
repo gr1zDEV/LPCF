@@ -10,7 +10,7 @@ softdepend: [PlaceholderAPI, floodgate, Geyser-Spigot]
 commands:
   ezchat:
     description: EzChat commands.
-    usage: "Usage: /ezchat <reload|clear|debug>"
+    usage: "Usage: /ezchat <reload|clear|debug|logs>"
   togglechat:
     description: Toggle receiving public chat.
     usage: "Usage: /togglechat [on|off]"
@@ -84,3 +84,7 @@ permissions:
   ezchat.togglemail:
     description: Allows use of /togglemail
     default: true
+
+  ezchat.logs:
+    description: Allows use of /ezchat logs
+    default: op

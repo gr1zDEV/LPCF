@@ -75,6 +75,35 @@ public final class SQLiteManager implements DatabaseManager {
             statement.execute("CREATE INDEX IF NOT EXISTS idx_mail_receiver_timestamp ON mail(receiver_uuid, timestamp DESC)");
             statement.execute("CREATE INDEX IF NOT EXISTS idx_mail_sender_timestamp ON mail(sender_uuid, timestamp DESC)");
             statement.execute("CREATE INDEX IF NOT EXISTS idx_ignores_owner_target ON ignores(owner_uuid, target_uuid)");
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS communication_logs (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        log_type TEXT NOT NULL,
+                        sender_uuid TEXT NOT NULL,
+                        sender_name TEXT,
+                        receiver_uuid TEXT,
+                        receiver_name TEXT,
+                        message TEXT NOT NULL,
+                        timestamp INTEGER NOT NULL
+                    )
+                    """);
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS audit_logs (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        actor_uuid TEXT,
+                        actor_name TEXT,
+                        audit_type TEXT NOT NULL,
+                        details TEXT,
+                        timestamp INTEGER NOT NULL
+                    )
+                    """);
+            statement.execute("CREATE INDEX IF NOT EXISTS idx_comm_sender_uuid ON communication_logs(sender_uuid)");
+            statement.execute("CREATE INDEX IF NOT EXISTS idx_comm_receiver_uuid ON communication_logs(receiver_uuid)");
+            statement.execute("CREATE INDEX IF NOT EXISTS idx_comm_log_type ON communication_logs(log_type)");
+            statement.execute("CREATE INDEX IF NOT EXISTS idx_comm_timestamp ON communication_logs(timestamp DESC)");
+            statement.execute("CREATE INDEX IF NOT EXISTS idx_audit_actor_uuid ON audit_logs(actor_uuid)");
+            statement.execute("CREATE INDEX IF NOT EXISTS idx_audit_type ON audit_logs(audit_type)");
+            statement.execute("CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp DESC)");
         } catch (final SQLException exception) {
             plugin.getLogger().severe("Failed to initialize SQLite database: " + exception.getMessage());
         }

@@ -1,0 +1,20 @@
+features:
+  enabled: true
+
+settings:
+  logging-enabled: true
+  public-chat: true
+  private-messages: true
+  mail: true
+  audit: true
+  page-size: 10
+  time-format: "yyyy-MM-dd HH:mm:ss"
+
+messages:
+  no-permission: "&cYou do not have permission."
+  feature-disabled: "&cThat feature is currently disabled."
+  player-not-found: "&cPlayer not found."
+  invalid-usage: "&cInvalid usage."
+  no-results: "&7No matching logs found."
+  header: "&8&m----------------"
+  footer: "&8&m----------------"

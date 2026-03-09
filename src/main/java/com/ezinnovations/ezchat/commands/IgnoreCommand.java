@@ -3,6 +3,7 @@ package com.ezinnovations.ezchat.commands;
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
+import com.ezinnovations.ezchat.service.AuditLogService;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -17,11 +18,13 @@ public final class IgnoreCommand implements CommandExecutor {
     private final EzChat plugin;
     private final FeatureManager featureManager;
     private final IgnoreManager ignoreManager;
+    private final AuditLogService auditLogService;
 
-    public IgnoreCommand(final EzChat plugin, final FeatureManager featureManager, final IgnoreManager ignoreManager) {
+    public IgnoreCommand(final EzChat plugin, final FeatureManager featureManager, final IgnoreManager ignoreManager, final AuditLogService auditLogService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.ignoreManager = ignoreManager;
+        this.auditLogService = auditLogService;
     }
 
     @Override
@@ -70,6 +73,7 @@ public final class IgnoreCommand implements CommandExecutor {
 
         final String targetName = target.getName() != null ? target.getName() : args[0];
         if (!enabled) {
+            auditLogService.log(player, "IGNORE_REMOVE", "removed ignore for " + targetName + " with type " + ignoreType.name());
             player.sendMessage(plugin.colorize(plugin.getConfig().getString("ignore.disabled", "&aYou are no longer ignoring {player}.")
                     .replace("{player}", targetName)));
             return true;
@@ -83,6 +87,7 @@ public final class IgnoreCommand implements CommandExecutor {
             default -> key = "ignore.enabled-all";
         }
 
+        auditLogService.log(player, "IGNORE_SET", "ignored " + targetName + " with type " + ignoreType.name());
         player.sendMessage(plugin.colorize(plugin.getConfig().getString(key, "&cYou are now ignoring {player}.")
                 .replace("{player}", targetName)));
         return true;

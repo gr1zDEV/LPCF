@@ -1,6 +1,7 @@
 package com.ezinnovations.ezchat.managers;
 
 import com.ezinnovations.ezchat.EzChat;
+import com.ezinnovations.ezchat.config.LogsConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -16,8 +17,11 @@ public final class ConfigManager {
     private File mailFile;
     private FileConfiguration mailConfig;
 
+    private final LogsConfig logsConfig;
+
     public ConfigManager(final EzChat plugin) {
         this.plugin = plugin;
+        this.logsConfig = new LogsConfig(plugin);
     }
 
     public void reload() {
@@ -36,6 +40,8 @@ public final class ConfigManager {
             plugin.saveResource("mail.yml", false);
         }
         mailConfig = YamlConfiguration.loadConfiguration(mailFile);
+
+        logsConfig.reload();
     }
 
     public FileConfiguration getPrivateMessageConfig() {
@@ -44,5 +50,9 @@ public final class ConfigManager {
 
     public FileConfiguration getMailConfig() {
         return mailConfig;
+    }
+
+    public LogsConfig getLogsConfig() {
+        return logsConfig;
     }
 }
