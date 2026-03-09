@@ -7,6 +7,12 @@ import com.ezinnovations.ezchat.commands.MessageCommand;
 import com.ezinnovations.ezchat.commands.ReplyCommand;
 import com.ezinnovations.ezchat.commands.ToggleMailCommand;
 import com.ezinnovations.ezchat.commands.ToggleMsgCommand;
+import com.ezinnovations.ezchat.database.DatabaseManager;
+import com.ezinnovations.ezchat.database.LegacyYamlMigration;
+import com.ezinnovations.ezchat.database.SQLiteManager;
+import com.ezinnovations.ezchat.database.repository.IgnoreRepository;
+import com.ezinnovations.ezchat.database.repository.MailRepository;
+import com.ezinnovations.ezchat.database.repository.ToggleRepository;
 import com.ezinnovations.ezchat.listeners.PaperChatListener;
 import com.ezinnovations.ezchat.listeners.PlayerJoinListener;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
@@ -42,6 +48,7 @@ public final class EzChat extends JavaPlugin {
 	private IgnoreManager ignoreManager;
 	private MailManager mailManager;
 	private FloodgateHook floodgateHook;
+	private DatabaseManager databaseManager;
 
 
 	@Override
@@ -58,12 +65,20 @@ public final class EzChat extends JavaPlugin {
 		this.featureManager = new FeatureManager(this);
 		this.featureManager.reload();
 
-		this.chatToggleManager = new ChatToggleManager(this);
+		this.databaseManager = new SQLiteManager(this);
+		this.databaseManager.initialize();
+
+		final ToggleRepository toggleRepository = new ToggleRepository(this.databaseManager);
+		final IgnoreRepository ignoreRepository = new IgnoreRepository(this.databaseManager);
+		final MailRepository mailRepository = new MailRepository(this.databaseManager);
+		new LegacyYamlMigration(this, toggleRepository, ignoreRepository, mailRepository).migrateIfNeeded();
+
+		this.chatToggleManager = new ChatToggleManager(this, toggleRepository);
 		this.chatToggleManager.load();
 		this.messageManager = new MessageManager();
-		this.ignoreManager = new IgnoreManager(this);
+		this.ignoreManager = new IgnoreManager(this, ignoreRepository);
 		this.ignoreManager.load();
-		this.mailManager = new MailManager(this);
+		this.mailManager = new MailManager(this, mailRepository);
 		this.mailManager.load();
 		this.floodgateHook = new FloodgateHook(this);
 
@@ -132,6 +147,10 @@ public final class EzChat extends JavaPlugin {
 
 		if (this.mailManager != null) {
 			this.mailManager.save();
+		}
+
+		if (this.databaseManager != null) {
+			this.databaseManager.close();
 		}
 	}
 
