@@ -64,7 +64,7 @@ public final class MailCommand implements CommandExecutor {
         }
 
         if (!player.hasPermission("ezchat.mail")) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.no-permission", "&cYou do not have permission.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.no-permission", "&cYou do not have permission.")));
             return true;
         }
 
@@ -92,23 +92,23 @@ public final class MailCommand implements CommandExecutor {
 
         final OfflinePlayer target = resolveOfflinePlayer(args[0]);
         if (target == null || target.getUniqueId() == null || (!target.hasPlayedBefore() && !target.isOnline())) {
-            sender.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.player-not-found", "&cPlayer not found.")));
+            sender.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.player-not-found", "&cPlayer not found.")));
             return;
         }
 
         if (target.getUniqueId().equals(sender.getUniqueId())) {
-            sender.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.cannot-mail-self", "&cYou cannot mail yourself.")));
+            sender.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.cannot-mail-self", "&cYou cannot mail yourself.")));
             return;
         }
 
         if (featureManager.isMailToggleEnabled() && chatToggleManager.isMailDisabled(target.getUniqueId())) {
-            sender.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.target-mail-disabled", "&cThat player has mail disabled.")));
+            sender.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.target-mail-disabled", "&cThat player has mail disabled.")));
             return;
         }
 
         if (featureManager.isIgnoreEnabled()
                 && ignoreManager.isIgnoring(target.getUniqueId(), sender.getUniqueId(), IgnoreManager.IgnoreType.MAIL)) {
-            sender.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.target-ignoring-mail", "&cThat player is ignoring your mail.")));
+            sender.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.target-ignoring-mail", "&cThat player is ignoring your mail.")));
             return;
         }
 
@@ -117,25 +117,25 @@ public final class MailCommand implements CommandExecutor {
 
         mailManager.sendMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
 
-        sender.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.sent-confirmation", "&aMail sent to {player}.")
+        sender.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.sent-confirmation", "&aMail sent to {player}.")
                 .replace("{player}", receiverName)));
 
         if (target.isOnline() && target.getPlayer() != null) {
-            target.getPlayer().sendMessage(plugin.colorize(plugin.getConfig().getString("mail.received-notify", "&eYou received new mail from {player}. Use /mail inbox")
+            target.getPlayer().sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.received-notify", "&eYou received new mail from {player}. Use /mail inbox")
                     .replace("{player}", sender.getName())));
         }
     }
 
     private void handleInbox(final Player player, final String[] args) {
         if (!player.hasPermission("ezchat.mail.inbox")) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.no-permission", "&cYou do not have permission.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.no-permission", "&cYou do not have permission.")));
             return;
         }
 
         final int page = readPage(args, 1);
         final List<MailEntry> inbox = mailManager.getInbox(player.getUniqueId());
         if (inbox.isEmpty()) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.inbox-empty", "&7Your inbox is empty.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.inbox-empty", "&7Your inbox is empty.")));
             return;
         }
 
@@ -144,14 +144,14 @@ public final class MailCommand implements CommandExecutor {
 
     private void handleUnread(final Player player, final String[] args) {
         if (!player.hasPermission("ezchat.mail.unread")) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.no-permission", "&cYou do not have permission.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.no-permission", "&cYou do not have permission.")));
             return;
         }
 
         final int page = readPage(args, 1);
         final List<MailEntry> unread = mailManager.getUnreadInbox(player.getUniqueId());
         if (unread.isEmpty()) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.unread-empty", "&7You have no unread mail.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.unread-empty", "&7You have no unread mail.")));
             return;
         }
 
@@ -160,7 +160,7 @@ public final class MailCommand implements CommandExecutor {
 
     private void handleReceived(final Player player, final String[] args) {
         if (!player.hasPermission("ezchat.mail.received")) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.no-permission", "&cYou do not have permission.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.no-permission", "&cYou do not have permission.")));
             return;
         }
 
@@ -171,7 +171,7 @@ public final class MailCommand implements CommandExecutor {
 
         final OfflinePlayer source = resolveOfflinePlayer(args[1]);
         if (source == null || source.getUniqueId() == null) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.player-not-found", "&cPlayer not found.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.player-not-found", "&cPlayer not found.")));
             return;
         }
 
@@ -179,7 +179,7 @@ public final class MailCommand implements CommandExecutor {
         final List<MailEntry> received = mailManager.getInboxFromSender(player.getUniqueId(), source.getUniqueId());
         if (received.isEmpty()) {
             final String sourceName = source.getName() != null ? source.getName() : args[1];
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.no-mail-from-player", "&7No received mail from {player}.")
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.no-mail-from-player", "&7No received mail from {player}.")
                     .replace("{player}", sourceName)));
             return;
         }
@@ -190,7 +190,7 @@ public final class MailCommand implements CommandExecutor {
 
     private void handleSent(final Player player, final String[] args) {
         if (!player.hasPermission("ezchat.mail.sent")) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.no-permission", "&cYou do not have permission.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.no-permission", "&cYou do not have permission.")));
             return;
         }
 
@@ -198,7 +198,7 @@ public final class MailCommand implements CommandExecutor {
             final int page = args.length > 1 ? readPage(args, 1) : 1;
             final Set<String> targets = mailManager.getUniqueSentTargetNames(player.getUniqueId());
             if (targets.isEmpty()) {
-                player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.sent-empty", "&7You have not sent any mail.")));
+                player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.sent-empty", "&7You have not sent any mail.")));
                 return;
             }
             sendSentTargets(player, new ArrayList<>(targets), page);
@@ -207,7 +207,7 @@ public final class MailCommand implements CommandExecutor {
 
         final OfflinePlayer target = resolveOfflinePlayer(args[1]);
         if (target == null || target.getUniqueId() == null) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.player-not-found", "&cPlayer not found.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.player-not-found", "&cPlayer not found.")));
             return;
         }
 
@@ -215,7 +215,7 @@ public final class MailCommand implements CommandExecutor {
         final List<MailEntry> sentTo = mailManager.getSentToReceiver(player.getUniqueId(), target.getUniqueId());
         if (sentTo.isEmpty()) {
             final String targetName = target.getName() != null ? target.getName() : args[1];
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.no-mail-to-player", "&7No sent mail to {player}.")
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.no-mail-to-player", "&7No sent mail to {player}.")
                     .replace("{player}", targetName)));
             return;
         }

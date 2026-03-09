@@ -27,7 +27,7 @@ public final class FeatureManager {
         ignoreEnabled = plugin.getConfig().getBoolean("features.ignore.enabled", true);
         mailEnabled = plugin.getConfig().getBoolean("features.mail.enabled", true);
         mailToggleEnabled = plugin.getConfig().getBoolean("features.mail-toggle.enabled", true);
-        unreadLoginNotifyEnabled = plugin.getConfig().getBoolean("features.unread-login-notify.enabled", true);
+        unreadLoginNotifyEnabled = plugin.getConfigManager().getMailConfig().getBoolean("settings.unread-login-notify.enabled", true);
     }
 
     public boolean isPublicChatEnabled() {
