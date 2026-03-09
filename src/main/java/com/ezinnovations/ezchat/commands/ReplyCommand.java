@@ -6,6 +6,7 @@ import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.managers.MessageManager;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
+import com.ezinnovations.ezchat.service.MuteService;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -24,19 +25,22 @@ public final class ReplyCommand implements CommandExecutor {
     private final ChatToggleManager chatToggleManager;
     private final IgnoreManager ignoreManager;
     private final CommunicationLogService communicationLogService;
+    private final MuteService muteService;
 
     public ReplyCommand(final EzChat plugin,
                         final FeatureManager featureManager,
                         final MessageManager messageManager,
                         final ChatToggleManager chatToggleManager,
                         final IgnoreManager ignoreManager,
-                        final CommunicationLogService communicationLogService) {
+                        final CommunicationLogService communicationLogService,
+                        final MuteService muteService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.messageManager = messageManager;
         this.chatToggleManager = chatToggleManager;
         this.ignoreManager = ignoreManager;
         this.communicationLogService = communicationLogService;
+        this.muteService = muteService;
     }
 
     @Override
@@ -53,6 +57,11 @@ public final class ReplyCommand implements CommandExecutor {
 
         if (!player.hasPermission("ezchat.reply")) {
             player.sendMessage(plugin.colorize(plugin.getConfigManager().getPrivateMessageConfig().getString("messages.no-permission", "&cYou do not have permission.")));
+            return true;
+        }
+
+        if (muteService.isFeatureEnabled() && muteService.blockPrivateMessages() && muteService.isMuted(player.getUniqueId())) {
+            muteService.sendMuteBlockedMessage(player, "muted-private-messages", "&cYou are muted and cannot send private messages.");
             return true;
         }
 

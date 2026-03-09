@@ -5,6 +5,7 @@ import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
+import com.ezinnovations.ezchat.service.MuteService;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
@@ -27,24 +28,33 @@ public final class PaperChatListener implements Listener {
     private final IgnoreManager ignoreManager;
     private final FloodgateHook floodgateHook;
     private final CommunicationLogService communicationLogService;
+    private final MuteService muteService;
 
     public PaperChatListener(final EzChat plugin,
                              final FeatureManager featureManager,
                              final ChatToggleManager chatToggleManager,
                              final IgnoreManager ignoreManager,
                              final FloodgateHook floodgateHook,
-                             final CommunicationLogService communicationLogService) {
+                             final CommunicationLogService communicationLogService,
+                             final MuteService muteService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.chatToggleManager = chatToggleManager;
         this.ignoreManager = ignoreManager;
         this.floodgateHook = floodgateHook;
         this.communicationLogService = communicationLogService;
+        this.muteService = muteService;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChat(final AsyncChatEvent event) {
         if (!featureManager.isPublicChatEnabled()) {
+            return;
+        }
+
+        if (muteService.isFeatureEnabled() && muteService.blockPublicChat() && muteService.isMuted(event.getPlayer().getUniqueId())) {
+            event.setCancelled(true);
+            muteService.sendMuteBlockedMessage(event.getPlayer(), "muted-chat", "&cYou are muted and cannot send chat messages.");
             return;
         }
 

@@ -1,0 +1,21 @@
+features:
+  enabled: true
+
+settings:
+  block-public-chat: true
+  block-private-messages: true
+  block-mail: true
+
+messages:
+  no-permission: "&cYou do not have permission."
+  feature-disabled: "&cThat feature is currently disabled."
+  player-not-found: "&cPlayer not found."
+  already-muted: "&cThat player is already muted."
+  mute-success: "&aMuted {player}."
+  temp-mute-success: "&aTemporarily muted {player} for {duration}."
+  invalid-duration: "&cInvalid duration."
+  muted-chat: "&cYou are muted and cannot send chat messages."
+  muted-private-messages: "&cYou are muted and cannot send private messages."
+  muted-mail: "&cYou are muted and cannot send mail."
+  muted-generic: "&cYou are muted and cannot communicate right now."
+  muted-until: "&cYou are muted for another {time}."

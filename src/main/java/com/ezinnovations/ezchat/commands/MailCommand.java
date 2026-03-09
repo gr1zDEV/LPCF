@@ -9,6 +9,7 @@ import com.ezinnovations.ezchat.model.MailEntry;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 import com.ezinnovations.ezchat.service.AuditLogService;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
+import com.ezinnovations.ezchat.service.MuteService;
 import com.ezinnovations.ezchat.utils.TimeFormatUtil;
 
 import net.kyori.adventure.text.Component;
@@ -40,6 +41,7 @@ public final class MailCommand implements CommandExecutor {
     private final FloodgateHook floodgateHook;
     private final CommunicationLogService communicationLogService;
     private final AuditLogService auditLogService;
+    private final MuteService muteService;
 
     public MailCommand(final EzChat plugin,
                        final FeatureManager featureManager,
@@ -48,7 +50,8 @@ public final class MailCommand implements CommandExecutor {
                        final IgnoreManager ignoreManager,
                        final FloodgateHook floodgateHook,
                        final CommunicationLogService communicationLogService,
-                       final AuditLogService auditLogService) {
+                       final AuditLogService auditLogService,
+                       final MuteService muteService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.mailManager = mailManager;
@@ -57,6 +60,7 @@ public final class MailCommand implements CommandExecutor {
         this.floodgateHook = floodgateHook;
         this.communicationLogService = communicationLogService;
         this.auditLogService = auditLogService;
+        this.muteService = muteService;
     }
 
     @Override
@@ -93,6 +97,11 @@ public final class MailCommand implements CommandExecutor {
     }
 
     private void handleSend(final Player sender, final String[] args) {
+        if (muteService.isFeatureEnabled() && muteService.blockMail() && muteService.isMuted(sender.getUniqueId())) {
+            muteService.sendMuteBlockedMessage(sender, "muted-mail", "&cYou are muted and cannot send mail.");
+            return;
+        }
+
         if (args.length < 2) {
             sender.sendMessage(plugin.colorize("&cUsage: /mail <player> <message>"));
             return;
