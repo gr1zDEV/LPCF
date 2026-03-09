@@ -4,6 +4,7 @@ import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
+import com.ezinnovations.ezchat.service.CommunicationLogService;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
@@ -25,13 +26,20 @@ public final class PaperChatListener implements Listener {
     private final ChatToggleManager chatToggleManager;
     private final IgnoreManager ignoreManager;
     private final FloodgateHook floodgateHook;
+    private final CommunicationLogService communicationLogService;
 
-    public PaperChatListener(final EzChat plugin, final FeatureManager featureManager, final ChatToggleManager chatToggleManager, final IgnoreManager ignoreManager, final FloodgateHook floodgateHook) {
+    public PaperChatListener(final EzChat plugin,
+                             final FeatureManager featureManager,
+                             final ChatToggleManager chatToggleManager,
+                             final IgnoreManager ignoreManager,
+                             final FloodgateHook floodgateHook,
+                             final CommunicationLogService communicationLogService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.chatToggleManager = chatToggleManager;
         this.ignoreManager = ignoreManager;
         this.floodgateHook = floodgateHook;
+        this.communicationLogService = communicationLogService;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -45,15 +53,17 @@ public final class PaperChatListener implements Listener {
 
         final Player player = event.getPlayer();
 
-        String format = plugin.buildFormat(player);
-        String processedMessage = plugin.processMessage(player,
+        final String format = plugin.buildFormat(player);
+        final String processedMessage = plugin.processMessage(player,
                 LegacyComponentSerializer.legacySection().serialize(event.message()));
 
-        String finalFormat = format.replace("{message}", processedMessage);
-        Component rendered = LegacyComponentSerializer.legacySection().deserialize(finalFormat);
+        final String finalFormat = format.replace("{message}", processedMessage);
+        final Component rendered = LegacyComponentSerializer.legacySection().deserialize(finalFormat);
 
         event.renderer((source, sourceDisplayName, msg, audience) ->
                 shouldReceiveAudience(audience, senderUuid) ? rendered : Component.empty());
+
+        communicationLogService.logPublicChat(player.getUniqueId(), player.getName(), processedMessage);
     }
 
     private boolean shouldReceiveAudience(final Audience audience, final UUID senderUuid) {

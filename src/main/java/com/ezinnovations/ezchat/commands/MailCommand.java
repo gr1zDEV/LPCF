@@ -7,6 +7,8 @@ import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.managers.MailManager;
 import com.ezinnovations.ezchat.model.MailEntry;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
+import com.ezinnovations.ezchat.service.AuditLogService;
+import com.ezinnovations.ezchat.service.CommunicationLogService;
 import com.ezinnovations.ezchat.utils.TimeFormatUtil;
 
 import net.kyori.adventure.text.Component;
@@ -36,19 +38,25 @@ public final class MailCommand implements CommandExecutor {
     private final ChatToggleManager chatToggleManager;
     private final IgnoreManager ignoreManager;
     private final FloodgateHook floodgateHook;
+    private final CommunicationLogService communicationLogService;
+    private final AuditLogService auditLogService;
 
     public MailCommand(final EzChat plugin,
                        final FeatureManager featureManager,
                        final MailManager mailManager,
                        final ChatToggleManager chatToggleManager,
                        final IgnoreManager ignoreManager,
-                       final FloodgateHook floodgateHook) {
+                       final FloodgateHook floodgateHook,
+                       final CommunicationLogService communicationLogService,
+                       final AuditLogService auditLogService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.mailManager = mailManager;
         this.chatToggleManager = chatToggleManager;
         this.ignoreManager = ignoreManager;
         this.floodgateHook = floodgateHook;
+        this.communicationLogService = communicationLogService;
+        this.auditLogService = auditLogService;
     }
 
     @Override
@@ -75,10 +83,10 @@ public final class MailCommand implements CommandExecutor {
 
         final String sub = args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
-            case "inbox" -> handleInbox(player, args);
-            case "unread" -> handleUnread(player, args);
-            case "sent" -> handleSent(player, args);
-            case "received" -> handleReceived(player, args);
+            case "inbox" -> { handleInbox(player, args); auditLogService.log(player, "MAIL_INBOX_VIEW", "viewed inbox"); }
+            case "unread" -> { handleUnread(player, args); auditLogService.log(player, "MAIL_UNREAD_VIEW", "viewed unread mail"); }
+            case "sent" -> { handleSent(player, args); auditLogService.log(player, "MAIL_SENT_VIEW", "viewed sent mail"); }
+            case "received" -> { handleReceived(player, args); auditLogService.log(player, "MAIL_RECEIVED_VIEW", "viewed received mail"); }
             default -> handleSend(player, args);
         }
         return true;
@@ -116,9 +124,12 @@ public final class MailCommand implements CommandExecutor {
         final String receiverName = target.getName() != null ? target.getName() : args[0];
 
         mailManager.sendMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
+        communicationLogService.logMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
 
         sender.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.sent-confirmation", "&aMail sent to {player}.")
                 .replace("{player}", receiverName)));
+
+        auditLogService.log(sender, "MAIL_SEND", "sent mail to " + receiverName);
 
         if (target.isOnline() && target.getPlayer() != null) {
             target.getPlayer().sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.received-notify", "&eYou received new mail from {player}. Use /mail inbox")
