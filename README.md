@@ -57,7 +57,7 @@ EzChat is designed to replace fragmented chat tooling with a single, focused plu
 ### Player Chat Visibility
 
 - `/togglechat` (alias `/chattoggle`) lets players hide/show global chat.
-- State persists in `plugins/EzChat/toggles.yml`.
+- State persists in `plugins/EzChat/database.db` (SQLite).
 
 ### Private Messaging Suite
 
@@ -73,7 +73,7 @@ EzChat is designed to replace fragmented chat tooling with a single, focused plu
 - `ALL`: block both public chat and private messages.
 - `CHAT`: block public chat only.
 - `MSG`: block private messages only.
-- State persists in `plugins/EzChat/ignores.yml`.
+- State persists in `plugins/EzChat/database.db` (SQLite).
 
 ### Admin & Diagnostics
 
@@ -213,8 +213,7 @@ ignore:
 ## 💾 Storage Files
 
 - `plugins/EzChat/config.yml` — main plugin behavior/messages.
-- `plugins/EzChat/toggles.yml` — chat hidden + private message toggle states.
-- `plugins/EzChat/ignores.yml` — ignore relationships and ignore types.
+- `plugins/EzChat/database.db` — SQLite storage for togglechat/togglemsg/togglemail state, ignore relationships, mail, and unread tracking.
 
 ---
 

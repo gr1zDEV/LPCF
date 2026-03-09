@@ -8,7 +8,6 @@ import com.ezinnovations.ezchat.commands.ReplyCommand;
 import com.ezinnovations.ezchat.commands.ToggleMailCommand;
 import com.ezinnovations.ezchat.commands.ToggleMsgCommand;
 import com.ezinnovations.ezchat.database.DatabaseManager;
-import com.ezinnovations.ezchat.database.LegacyYamlMigration;
 import com.ezinnovations.ezchat.database.SQLiteManager;
 import com.ezinnovations.ezchat.database.repository.IgnoreRepository;
 import com.ezinnovations.ezchat.database.repository.MailRepository;
@@ -71,7 +70,6 @@ public final class EzChat extends JavaPlugin {
 		final ToggleRepository toggleRepository = new ToggleRepository(this.databaseManager);
 		final IgnoreRepository ignoreRepository = new IgnoreRepository(this.databaseManager);
 		final MailRepository mailRepository = new MailRepository(this.databaseManager);
-		new LegacyYamlMigration(this, toggleRepository, ignoreRepository, mailRepository).migrateIfNeeded();
 
 		this.chatToggleManager = new ChatToggleManager(this, toggleRepository);
 		this.chatToggleManager.load();
