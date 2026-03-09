@@ -33,7 +33,7 @@ public final class PlayerJoinListener implements Listener {
             return;
         }
 
-        final String message = plugin.getConfig().getString("mail.unread-login-notify.message", "&eYou have {count} unread mail(s). Use /mail inbox")
+        final String message = plugin.getConfigManager().getMailConfig().getString("messages.unread-login-notify", "&eYou have {count} unread mail(s). Use /mail inbox")
                 .replace("{count}", String.valueOf(unreadCount));
         player.sendMessage(plugin.colorize(message));
     }

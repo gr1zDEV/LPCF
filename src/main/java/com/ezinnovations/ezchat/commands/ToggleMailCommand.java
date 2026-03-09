@@ -34,22 +34,22 @@ public final class ToggleMailCommand implements CommandExecutor {
         }
 
         if (!player.hasPermission("ezchat.togglemail")) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.no-permission", "&cYou do not have permission.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.no-permission", "&cYou do not have permission.")));
             return true;
         }
 
         final ToggleMode mode = ToggleModeParser.parse(args);
         if (mode == null) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.toggle-invalid-usage", "&cUsage: /togglemail [on|off]")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.toggle-invalid-usage", "&cUsage: /togglemail [on|off]")));
             return true;
         }
 
         if (mode == ToggleMode.TOGGLE) {
             final boolean nowDisabled = chatToggleManager.toggleMail(player.getUniqueId());
             if (nowDisabled) {
-                player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.toggle-disabled", "&cYou will no longer receive mail.")));
+                player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.toggle-disabled", "&cYou will no longer receive mail.")));
             } else {
-                player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.toggle-enabled", "&aYou can now receive mail.")));
+                player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.toggle-enabled", "&aYou can now receive mail.")));
             }
             return true;
         }
@@ -58,18 +58,18 @@ public final class ToggleMailCommand implements CommandExecutor {
         final boolean currentlyDisabled = chatToggleManager.isMailDisabled(player.getUniqueId());
         if (shouldDisable == currentlyDisabled) {
             if (shouldDisable) {
-                player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.toggle-already-disabled", "&eMail is already disabled.")));
+                player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.toggle-already-disabled", "&eMail is already disabled.")));
             } else {
-                player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.toggle-already-enabled", "&eMail is already enabled.")));
+                player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.toggle-already-enabled", "&eMail is already enabled.")));
             }
             return true;
         }
 
         chatToggleManager.setMailDisabled(player.getUniqueId(), shouldDisable);
         if (shouldDisable) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.toggle-disabled", "&cYou will no longer receive mail.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.toggle-disabled", "&cYou will no longer receive mail.")));
         } else {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("mail.toggle-enabled", "&aYou can now receive mail.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.toggle-enabled", "&aYou can now receive mail.")));
         }
         return true;
     }

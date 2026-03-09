@@ -43,7 +43,7 @@ public final class MessageCommand implements CommandExecutor {
         }
 
         if (!player.hasPermission("ezchat.msg")) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.no-permission", "&cYou do not have permission.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getPrivateMessageConfig().getString("messages.no-permission", "&cYou do not have permission.")));
             return true;
         }
 
@@ -54,17 +54,17 @@ public final class MessageCommand implements CommandExecutor {
 
         final Player receiver = plugin.getServer().getPlayerExact(args[0]);
         if (receiver == null || !receiver.isOnline()) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.player-not-found", "&cPlayer not found.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getPrivateMessageConfig().getString("messages.player-not-found", "&cPlayer not found.")));
             return true;
         }
 
         if (receiver.getUniqueId().equals(player.getUniqueId())) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.cannot-message-self", "&cYou cannot message yourself.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getPrivateMessageConfig().getString("messages.cannot-message-self", "&cYou cannot message yourself.")));
             return true;
         }
 
         if (featureManager.isPrivateMessageToggleEnabled() && chatToggleManager.arePrivateMessagesDisabled(receiver.getUniqueId())) {
-            player.sendMessage(plugin.colorize(plugin.getConfig().getString("private-messages.target-disabled-messages", "&cThat player has private messages disabled.")));
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getPrivateMessageConfig().getString("messages.target-disabled-messages", "&cThat player has private messages disabled.")));
             return true;
         }
 
@@ -74,8 +74,8 @@ public final class MessageCommand implements CommandExecutor {
         }
 
         final String message = Arrays.stream(args).skip(1).collect(Collectors.joining(" "));
-        final String sentFormat = plugin.getConfig().getString("private-messages.sent-format", "&8[&aTo {receiver}&8] &f{message}");
-        final String receivedFormat = plugin.getConfig().getString("private-messages.received-format", "&8[&6From {sender}&8] &f{message}");
+        final String sentFormat = plugin.getConfigManager().getPrivateMessageConfig().getString("formats.sent-format", "&8[&aTo {receiver}&8] &f{message}");
+        final String receivedFormat = plugin.getConfigManager().getPrivateMessageConfig().getString("formats.received-format", "&8[&6From {sender}&8] &f{message}");
 
         player.sendMessage(plugin.colorize(sentFormat
                 .replace("{sender}", player.getName())

@@ -1,0 +1,23 @@
+settings:
+  unread-login-notify:
+    enabled: true
+
+messages:
+  no-permission: "&cYou do not have permission."
+  player-not-found: "&cPlayer not found."
+  cannot-mail-self: "&cYou cannot mail yourself."
+  sent-confirmation: "&aMail sent to {player}."
+  received-notify: "&eYou received new mail from {player}. Use /mail inbox"
+  target-mail-disabled: "&cThat player has mail disabled."
+  target-ignoring-mail: "&cThat player is ignoring your mail."
+  toggle-enabled: "&aYou can now receive mail."
+  toggle-disabled: "&cYou will no longer receive mail."
+  toggle-already-enabled: "&eMail is already enabled."
+  toggle-already-disabled: "&eMail is already disabled."
+  toggle-invalid-usage: "&cUsage: /togglemail [on|off]"
+  inbox-empty: "&7Your inbox is empty."
+  unread-empty: "&7You have no unread mail."
+  sent-empty: "&7You have not sent any mail."
+  no-mail-from-player: "&7No received mail from {player}."
+  no-mail-to-player: "&7No sent mail to {player}."
+  unread-login-notify: "&eYou have {count} unread mail(s). Use /mail inbox"
