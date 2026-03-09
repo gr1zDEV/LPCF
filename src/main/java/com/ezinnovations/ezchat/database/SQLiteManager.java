@@ -104,6 +104,19 @@ public final class SQLiteManager implements DatabaseManager {
             statement.execute("CREATE INDEX IF NOT EXISTS idx_audit_actor_uuid ON audit_logs(actor_uuid)");
             statement.execute("CREATE INDEX IF NOT EXISTS idx_audit_type ON audit_logs(audit_type)");
             statement.execute("CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp DESC)");
+            statement.execute("""
+                    CREATE TABLE IF NOT EXISTS mutes (
+                        player_uuid TEXT PRIMARY KEY,
+                        player_name TEXT,
+                        mute_type TEXT NOT NULL,
+                        reason TEXT,
+                        created_at INTEGER NOT NULL,
+                        expires_at INTEGER,
+                        muted_by_uuid TEXT,
+                        muted_by_name TEXT
+                    )
+                    """);
+            statement.execute("CREATE INDEX IF NOT EXISTS idx_mutes_expires_at ON mutes(expires_at)");
         } catch (final SQLException exception) {
             plugin.getLogger().severe("Failed to initialize SQLite database: " + exception.getMessage());
         }
