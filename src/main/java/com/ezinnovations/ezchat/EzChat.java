@@ -18,6 +18,10 @@ import com.ezinnovations.ezchat.database.repository.IgnoreRepository;
 import com.ezinnovations.ezchat.database.repository.MailRepository;
 import com.ezinnovations.ezchat.database.repository.ToggleRepository;
 import com.ezinnovations.ezchat.database.repository.MuteRepository;
+import com.ezinnovations.ezchat.discord.AvatarUrlResolver;
+import com.ezinnovations.ezchat.discord.DiscordMessageBuilder;
+import com.ezinnovations.ezchat.discord.DiscordWebhookRouter;
+import com.ezinnovations.ezchat.discord.DiscordWebhookService;
 import com.ezinnovations.ezchat.listeners.PaperChatListener;
 import com.ezinnovations.ezchat.listeners.PlayerJoinListener;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
@@ -29,6 +33,7 @@ import com.ezinnovations.ezchat.managers.MessageManager;
 import com.ezinnovations.ezchat.service.AuditLogService;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
 import com.ezinnovations.ezchat.service.MuteService;
+import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.luckperms.api.LuckPerms;
@@ -74,6 +79,7 @@ public final class EzChat extends JavaPlugin {
 
         saveDefaultConfig();
         saveResource("logs.yml", false);
+        saveResource("discord.yml", false);
         this.configManager = new ConfigManager(this);
         this.configManager.reload();
         this.featureManager = new FeatureManager(this);
@@ -89,6 +95,12 @@ public final class EzChat extends JavaPlugin {
         final AuditLogRepository auditLogRepository = new AuditLogRepository(this.databaseManager);
         final MuteRepository muteRepository = new MuteRepository(this.databaseManager);
 
+        final AvatarUrlResolver avatarUrlResolver = new AvatarUrlResolver(configManager.getDiscordConfig());
+        final DiscordWebhookRouter discordWebhookRouter = new DiscordWebhookRouter(configManager.getDiscordConfig());
+        final DiscordMessageBuilder discordMessageBuilder = new DiscordMessageBuilder(configManager.getDiscordConfig(), avatarUrlResolver);
+        final DiscordWebhookService discordWebhookService = new DiscordWebhookService(this, configManager.getDiscordConfig(), discordWebhookRouter, discordMessageBuilder);
+        final DiscordNotificationService discordNotificationService = new DiscordNotificationService(discordWebhookService);
+
         final CommunicationLogService communicationLogService = new CommunicationLogService(this, configManager.getLogsConfig(), communicationLogRepository);
         final AuditLogService auditLogService = new AuditLogService(this, configManager.getLogsConfig(), auditLogRepository);
         final MuteService muteService = new MuteService(this, configManager.getMuteConfig(), muteRepository, auditLogService);
@@ -102,50 +114,50 @@ public final class EzChat extends JavaPlugin {
         this.mailManager.load();
         this.floodgateHook = new FloodgateHook(this);
         this.ezChatLogsCommand = new EzChatLogsCommand(this, configManager.getLogsConfig(), communicationLogService, auditLogService);
-        this.ezChatMuteCommand = new EzChatMuteCommand(this, muteService, auditLogService);
-        this.ezChatMuteTempCommand = new EzChatMuteTempCommand(this, muteService, auditLogService);
+        this.ezChatMuteCommand = new EzChatMuteCommand(this, muteService, auditLogService, discordNotificationService);
+        this.ezChatMuteTempCommand = new EzChatMuteTempCommand(this, muteService, auditLogService, discordNotificationService);
 
-        getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.featureManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, muteService), this);
+        getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.featureManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, muteService, discordNotificationService), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this, this.featureManager, this.mailManager), this);
 
         if (getCommand("togglechat") != null) {
-            getCommand("togglechat").setExecutor(new ChatToggleCommand(this, this.featureManager, this.chatToggleManager, auditLogService));
+            getCommand("togglechat").setExecutor(new ChatToggleCommand(this, this.featureManager, this.chatToggleManager, auditLogService, discordNotificationService));
         } else {
             getLogger().warning("[EzChat] Failed to register /togglechat command.");
         }
 
         if (getCommand("msg") != null) {
-            getCommand("msg").setExecutor(new MessageCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService));
+            getCommand("msg").setExecutor(new MessageCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService, discordNotificationService));
         } else {
             getLogger().warning("[EzChat] Failed to register /msg command.");
         }
 
         if (getCommand("reply") != null) {
-            getCommand("reply").setExecutor(new ReplyCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService));
+            getCommand("reply").setExecutor(new ReplyCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService, discordNotificationService));
         } else {
             getLogger().warning("[EzChat] Failed to register /reply command.");
         }
 
         if (getCommand("togglemsg") != null) {
-            getCommand("togglemsg").setExecutor(new ToggleMsgCommand(this, this.featureManager, this.chatToggleManager, auditLogService));
+            getCommand("togglemsg").setExecutor(new ToggleMsgCommand(this, this.featureManager, this.chatToggleManager, auditLogService, discordNotificationService));
         } else {
             getLogger().warning("[EzChat] Failed to register /togglemsg command.");
         }
 
         if (getCommand("ignore") != null) {
-            getCommand("ignore").setExecutor(new IgnoreCommand(this, this.featureManager, this.ignoreManager, auditLogService));
+            getCommand("ignore").setExecutor(new IgnoreCommand(this, this.featureManager, this.ignoreManager, auditLogService, discordNotificationService));
         } else {
             getLogger().warning("[EzChat] Failed to register /ignore command.");
         }
 
         if (getCommand("mail") != null) {
-            getCommand("mail").setExecutor(new MailCommand(this, this.featureManager, this.mailManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, auditLogService, muteService));
+            getCommand("mail").setExecutor(new MailCommand(this, this.featureManager, this.mailManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, auditLogService, muteService, discordNotificationService));
         } else {
             getLogger().warning("[EzChat] Failed to register /mail command.");
         }
 
         if (getCommand("togglemail") != null) {
-            getCommand("togglemail").setExecutor(new ToggleMailCommand(this, this.featureManager, this.chatToggleManager, auditLogService));
+            getCommand("togglemail").setExecutor(new ToggleMailCommand(this, this.featureManager, this.chatToggleManager, auditLogService, discordNotificationService));
         } else {
             getLogger().warning("[EzChat] Failed to register /togglemail command.");
         }

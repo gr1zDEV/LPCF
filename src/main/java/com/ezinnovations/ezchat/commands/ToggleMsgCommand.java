@@ -4,6 +4,7 @@ import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.service.AuditLogService;
+import com.ezinnovations.ezchat.service.DiscordNotificationService;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,15 +17,18 @@ public final class ToggleMsgCommand implements CommandExecutor {
     private final FeatureManager featureManager;
     private final ChatToggleManager chatToggleManager;
     private final AuditLogService auditLogService;
+    private final DiscordNotificationService discordNotificationService;
 
     public ToggleMsgCommand(final EzChat plugin,
                             final FeatureManager featureManager,
                             final ChatToggleManager chatToggleManager,
-                            final AuditLogService auditLogService) {
+                            final AuditLogService auditLogService,
+                            final DiscordNotificationService discordNotificationService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.chatToggleManager = chatToggleManager;
         this.auditLogService = auditLogService;
+        this.discordNotificationService = discordNotificationService;
     }
 
     @Override
@@ -53,6 +57,7 @@ public final class ToggleMsgCommand implements CommandExecutor {
         if (mode == ToggleMode.TOGGLE) {
             final boolean nowDisabled = chatToggleManager.togglePrivateMessages(player.getUniqueId());
             auditLogService.log(player, "TOGGLE_MSG", "set private messages " + (nowDisabled ? "OFF" : "ON"));
+            discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "set private messages " + (nowDisabled ? "OFF" : "ON"));
             if (nowDisabled) {
                 player.sendMessage(plugin.colorize(plugin.getConfigManager().getPrivateMessageConfig().getString("messages.toggle-disabled", "&cYou will no longer receive private messages.")));
             } else {
@@ -74,6 +79,7 @@ public final class ToggleMsgCommand implements CommandExecutor {
 
         chatToggleManager.setPrivateMessagesDisabled(player.getUniqueId(), shouldDisable);
         auditLogService.log(player, "TOGGLE_MSG", "set private messages " + (shouldDisable ? "OFF" : "ON"));
+        discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "set private messages " + (shouldDisable ? "OFF" : "ON"));
         if (shouldDisable) {
             player.sendMessage(plugin.colorize(plugin.getConfigManager().getPrivateMessageConfig().getString("messages.toggle-disabled", "&cYou will no longer receive private messages.")));
         } else {

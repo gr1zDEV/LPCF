@@ -9,6 +9,7 @@ import com.ezinnovations.ezchat.model.MailEntry;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 import com.ezinnovations.ezchat.service.AuditLogService;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
+import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.service.MuteService;
 import com.ezinnovations.ezchat.utils.TimeFormatUtil;
 
@@ -42,6 +43,7 @@ public final class MailCommand implements CommandExecutor {
     private final CommunicationLogService communicationLogService;
     private final AuditLogService auditLogService;
     private final MuteService muteService;
+    private final DiscordNotificationService discordNotificationService;
 
     public MailCommand(final EzChat plugin,
                        final FeatureManager featureManager,
@@ -51,7 +53,8 @@ public final class MailCommand implements CommandExecutor {
                        final FloodgateHook floodgateHook,
                        final CommunicationLogService communicationLogService,
                        final AuditLogService auditLogService,
-                       final MuteService muteService) {
+                       final MuteService muteService,
+                       final DiscordNotificationService discordNotificationService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.mailManager = mailManager;
@@ -61,6 +64,7 @@ public final class MailCommand implements CommandExecutor {
         this.communicationLogService = communicationLogService;
         this.auditLogService = auditLogService;
         this.muteService = muteService;
+        this.discordNotificationService = discordNotificationService;
     }
 
     @Override
@@ -87,10 +91,10 @@ public final class MailCommand implements CommandExecutor {
 
         final String sub = args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
-            case "inbox" -> { handleInbox(player, args); auditLogService.log(player, "MAIL_INBOX_VIEW", "viewed inbox"); }
-            case "unread" -> { handleUnread(player, args); auditLogService.log(player, "MAIL_UNREAD_VIEW", "viewed unread mail"); }
-            case "sent" -> { handleSent(player, args); auditLogService.log(player, "MAIL_SENT_VIEW", "viewed sent mail"); }
-            case "received" -> { handleReceived(player, args); auditLogService.log(player, "MAIL_RECEIVED_VIEW", "viewed received mail"); }
+            case "inbox" -> { handleInbox(player, args); auditLogService.log(player, "MAIL_INBOX_VIEW", "viewed inbox"); discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "viewed inbox"); }
+            case "unread" -> { handleUnread(player, args); auditLogService.log(player, "MAIL_UNREAD_VIEW", "viewed unread mail"); discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "viewed unread mail"); }
+            case "sent" -> { handleSent(player, args); auditLogService.log(player, "MAIL_SENT_VIEW", "viewed sent mail"); discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "viewed sent mail"); }
+            case "received" -> { handleReceived(player, args); auditLogService.log(player, "MAIL_RECEIVED_VIEW", "viewed received mail"); discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "viewed received mail"); }
             default -> handleSend(player, args);
         }
         return true;
@@ -134,11 +138,13 @@ public final class MailCommand implements CommandExecutor {
 
         mailManager.sendMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
         communicationLogService.logMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
+        discordNotificationService.sendMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
 
         sender.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.sent-confirmation", "&aMail sent to {player}.")
                 .replace("{player}", receiverName)));
 
         auditLogService.log(sender, "MAIL_SEND", "sent mail to " + receiverName);
+        discordNotificationService.sendAuditAction(sender.getUniqueId(), sender.getName(), "sent mail to " + receiverName);
 
         if (target.isOnline() && target.getPlayer() != null) {
             target.getPlayer().sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.received-notify", "&eYou received new mail from {player}. Use /mail inbox")

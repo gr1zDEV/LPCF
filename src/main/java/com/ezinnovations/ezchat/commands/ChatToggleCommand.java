@@ -4,6 +4,7 @@ import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.service.AuditLogService;
+import com.ezinnovations.ezchat.service.DiscordNotificationService;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,15 +17,18 @@ public final class ChatToggleCommand implements CommandExecutor {
     private final FeatureManager featureManager;
     private final ChatToggleManager chatToggleManager;
     private final AuditLogService auditLogService;
+    private final DiscordNotificationService discordNotificationService;
 
     public ChatToggleCommand(final EzChat plugin,
                              final FeatureManager featureManager,
                              final ChatToggleManager chatToggleManager,
-                             final AuditLogService auditLogService) {
+                             final AuditLogService auditLogService,
+                             final DiscordNotificationService discordNotificationService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.chatToggleManager = chatToggleManager;
         this.auditLogService = auditLogService;
+        this.discordNotificationService = discordNotificationService;
     }
 
     @Override
@@ -53,6 +57,7 @@ public final class ChatToggleCommand implements CommandExecutor {
         if (mode == ToggleMode.TOGGLE) {
             final boolean nowHidden = chatToggleManager.toggleChat(player.getUniqueId());
             auditLogService.log(player, "TOGGLE_CHAT", "set public chat visibility " + (nowHidden ? "OFF" : "ON"));
+            discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "set public chat visibility " + (nowHidden ? "OFF" : "ON"));
             if (nowHidden) {
                 player.sendMessage(plugin.colorize(plugin.getConfig().getString("chat-toggle.disabled", "&cPublic chat is now hidden.")));
             } else {
@@ -74,6 +79,7 @@ public final class ChatToggleCommand implements CommandExecutor {
 
         chatToggleManager.setChatHidden(player.getUniqueId(), shouldHide);
         auditLogService.log(player, "TOGGLE_CHAT", "set public chat visibility " + (shouldHide ? "OFF" : "ON"));
+        discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "set public chat visibility " + (shouldHide ? "OFF" : "ON"));
         if (shouldHide) {
             player.sendMessage(plugin.colorize(plugin.getConfig().getString("chat-toggle.disabled", "&cPublic chat is now hidden.")));
         } else {

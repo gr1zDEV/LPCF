@@ -1,6 +1,7 @@
 package com.ezinnovations.ezchat.managers;
 
 import com.ezinnovations.ezchat.EzChat;
+import com.ezinnovations.ezchat.config.DiscordConfig;
 import com.ezinnovations.ezchat.config.LogsConfig;
 import com.ezinnovations.ezchat.config.MuteConfig;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -20,11 +21,13 @@ public final class ConfigManager {
 
     private final LogsConfig logsConfig;
     private final MuteConfig muteConfig;
+    private final DiscordConfig discordConfig;
 
     public ConfigManager(final EzChat plugin) {
         this.plugin = plugin;
         this.logsConfig = new LogsConfig(plugin);
         this.muteConfig = new MuteConfig(plugin);
+        this.discordConfig = new DiscordConfig(plugin);
     }
 
     public void reload() {
@@ -46,6 +49,7 @@ public final class ConfigManager {
 
         logsConfig.reload();
         muteConfig.reload();
+        discordConfig.reload();
     }
 
     public FileConfiguration getPrivateMessageConfig() {
@@ -62,5 +66,9 @@ public final class ConfigManager {
 
     public MuteConfig getMuteConfig() {
         return muteConfig;
+    }
+
+    public DiscordConfig getDiscordConfig() {
+        return discordConfig;
     }
 }

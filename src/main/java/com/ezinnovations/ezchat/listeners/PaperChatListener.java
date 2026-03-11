@@ -5,6 +5,7 @@ import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
+import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.service.MuteService;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 
@@ -29,6 +30,7 @@ public final class PaperChatListener implements Listener {
     private final FloodgateHook floodgateHook;
     private final CommunicationLogService communicationLogService;
     private final MuteService muteService;
+    private final DiscordNotificationService discordNotificationService;
 
     public PaperChatListener(final EzChat plugin,
                              final FeatureManager featureManager,
@@ -36,7 +38,8 @@ public final class PaperChatListener implements Listener {
                              final IgnoreManager ignoreManager,
                              final FloodgateHook floodgateHook,
                              final CommunicationLogService communicationLogService,
-                             final MuteService muteService) {
+                             final MuteService muteService,
+                             final DiscordNotificationService discordNotificationService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.chatToggleManager = chatToggleManager;
@@ -44,6 +47,7 @@ public final class PaperChatListener implements Listener {
         this.floodgateHook = floodgateHook;
         this.communicationLogService = communicationLogService;
         this.muteService = muteService;
+        this.discordNotificationService = discordNotificationService;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -74,6 +78,7 @@ public final class PaperChatListener implements Listener {
                 shouldReceiveAudience(audience, senderUuid) ? rendered : Component.empty());
 
         communicationLogService.logPublicChat(player.getUniqueId(), player.getName(), processedMessage);
+        discordNotificationService.sendPublicChat(player, processedMessage);
     }
 
     private boolean shouldReceiveAudience(final Audience audience, final UUID senderUuid) {
