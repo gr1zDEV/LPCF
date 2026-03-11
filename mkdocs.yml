@@ -3,16 +3,29 @@ site_description: Communication management plugin for Minecraft servers
 site_author: EZInnovations
 repo_url: https://github.com/<username>/EzChat
 
+site_url: https://<username>.github.io/EzChat/
+
 theme:
   name: material
-  palette:
-    scheme: slate
-    primary: indigo
-    accent: indigo
   features:
-    - navigation.sections
-    - navigation.expand
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
     - navigation.footer
+    - content.code.copy
+  palette:
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
 
 nav:
   - Home: index.md
@@ -28,3 +41,6 @@ markdown_extensions:
   - codehilite
   - toc:
       permalink: true
+
+extra_css:
+  - stylesheets/extra.css
