@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://&lt;username&gt;.github.io/EzChat/</loc>
+         <lastmod>2026-03-11</lastmod>
+    </url>
+    <url>
+         <loc>https://&lt;username&gt;.github.io/EzChat/commands/</loc>
+         <lastmod>2026-03-11</lastmod>
+    </url>
+    <url>
+         <loc>https://&lt;username&gt;.github.io/EzChat/configuration/</loc>
+         <lastmod>2026-03-11</lastmod>
+    </url>
+    <url>
+         <loc>https://&lt;username&gt;.github.io/EzChat/installation/</loc>
+         <lastmod>2026-03-11</lastmod>
+    </url>
+    <url>
+         <loc>https://&lt;username&gt;.github.io/EzChat/logging/</loc>
+         <lastmod>2026-03-11</lastmod>
+    </url>
+    <url>
+         <loc>https://&lt;username&gt;.github.io/EzChat/mute-system/</loc>
+         <lastmod>2026-03-11</lastmod>
+    </url>
+    <url>
+         <loc>https://&lt;username&gt;.github.io/EzChat/permissions/</loc>
+         <lastmod>2026-03-11</lastmod>
+    </url>
+</urlset>
