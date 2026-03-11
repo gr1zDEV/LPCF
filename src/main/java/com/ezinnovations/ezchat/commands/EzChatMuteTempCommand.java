@@ -3,6 +3,7 @@ package com.ezinnovations.ezchat.commands;
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.service.AuditLogService;
 import com.ezinnovations.ezchat.service.MuteService;
+import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.utils.DurationParser;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -16,11 +17,13 @@ public final class EzChatMuteTempCommand {
     private final EzChat plugin;
     private final MuteService muteService;
     private final AuditLogService auditLogService;
+    private final DiscordNotificationService discordNotificationService;
 
-    public EzChatMuteTempCommand(final EzChat plugin, final MuteService muteService, final AuditLogService auditLogService) {
+    public EzChatMuteTempCommand(final EzChat plugin, final MuteService muteService, final AuditLogService auditLogService, final DiscordNotificationService discordNotificationService) {
         this.plugin = plugin;
         this.muteService = muteService;
         this.auditLogService = auditLogService;
+        this.discordNotificationService = discordNotificationService;
     }
 
     public boolean execute(final CommandSender sender, final String[] args) {
@@ -64,6 +67,7 @@ public final class EzChatMuteTempCommand {
                 .replace("{player}", targetName)
                 .replace("{duration}", args[2])));
         auditLogService.log(actorUuid, actorName, "TEMP_MUTE_SET", "temp-muted " + targetName + " for " + args[2]);
+        discordNotificationService.sendMuteAction(actorUuid, actorName, targetName, args[2], true);
         return true;
     }
 

@@ -1,0 +1,42 @@
+features:
+  enabled: false
+
+webhooks:
+  default: ""
+  public-chat: ""
+  private-messages: ""
+  mail: ""
+  mute-actions: ""
+  audit-actions: ""
+
+webhook:
+  use-embeds: true
+
+identity:
+  username-mode: "minecraft-name"
+  static-username: "EzChat"
+  avatar-mode: "minecraft-head"
+  static-avatar-url: ""
+
+avatar:
+  provider: "crafatar"
+  custom-url: ""
+
+events:
+  public-chat: true
+  private-messages: false
+  mail: false
+  mute-actions: true
+  audit-actions: true
+
+format:
+  public-chat: "{player}: {message}"
+  private-message: "[MSG] {sender} -> {receiver}: {message}"
+  mail: "[MAIL] {sender} -> {receiver}: {message}"
+  mute-action: "[MUTE] {actor} muted {target}"
+  temp-mute-action: "[TEMP-MUTE] {actor} temp-muted {target} for {duration}"
+  audit-action: "[AUDIT] {actor}: {details}"
+
+messages:
+  feature-disabled: "&cDiscord webhook support is disabled."
+  webhook-missing: "&cDiscord webhook URL is not configured."

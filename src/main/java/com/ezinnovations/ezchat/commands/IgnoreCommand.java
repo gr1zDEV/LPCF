@@ -4,6 +4,7 @@ import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.service.AuditLogService;
+import com.ezinnovations.ezchat.service.DiscordNotificationService;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -19,12 +20,14 @@ public final class IgnoreCommand implements CommandExecutor {
     private final FeatureManager featureManager;
     private final IgnoreManager ignoreManager;
     private final AuditLogService auditLogService;
+    private final DiscordNotificationService discordNotificationService;
 
-    public IgnoreCommand(final EzChat plugin, final FeatureManager featureManager, final IgnoreManager ignoreManager, final AuditLogService auditLogService) {
+    public IgnoreCommand(final EzChat plugin, final FeatureManager featureManager, final IgnoreManager ignoreManager, final AuditLogService auditLogService, final DiscordNotificationService discordNotificationService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.ignoreManager = ignoreManager;
         this.auditLogService = auditLogService;
+        this.discordNotificationService = discordNotificationService;
     }
 
     @Override
@@ -74,6 +77,7 @@ public final class IgnoreCommand implements CommandExecutor {
         final String targetName = target.getName() != null ? target.getName() : args[0];
         if (!enabled) {
             auditLogService.log(player, "IGNORE_REMOVE", "removed ignore for " + targetName + " with type " + ignoreType.name());
+            discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "removed ignore for " + targetName + " with type " + ignoreType.name());
             player.sendMessage(plugin.colorize(plugin.getConfig().getString("ignore.disabled", "&aYou are no longer ignoring {player}.")
                     .replace("{player}", targetName)));
             return true;
@@ -88,6 +92,7 @@ public final class IgnoreCommand implements CommandExecutor {
         }
 
         auditLogService.log(player, "IGNORE_SET", "ignored " + targetName + " with type " + ignoreType.name());
+        discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "ignored " + targetName + " with type " + ignoreType.name());
         player.sendMessage(plugin.colorize(plugin.getConfig().getString(key, "&cYou are now ignoring {player}.")
                 .replace("{player}", targetName)));
         return true;

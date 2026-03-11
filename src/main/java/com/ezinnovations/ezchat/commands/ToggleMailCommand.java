@@ -4,6 +4,7 @@ import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.service.AuditLogService;
+import com.ezinnovations.ezchat.service.DiscordNotificationService;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -16,15 +17,18 @@ public final class ToggleMailCommand implements CommandExecutor {
     private final FeatureManager featureManager;
     private final ChatToggleManager chatToggleManager;
     private final AuditLogService auditLogService;
+    private final DiscordNotificationService discordNotificationService;
 
     public ToggleMailCommand(final EzChat plugin,
                              final FeatureManager featureManager,
                              final ChatToggleManager chatToggleManager,
-                             final AuditLogService auditLogService) {
+                             final AuditLogService auditLogService,
+                             final DiscordNotificationService discordNotificationService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.chatToggleManager = chatToggleManager;
         this.auditLogService = auditLogService;
+        this.discordNotificationService = discordNotificationService;
     }
 
     @Override
@@ -53,6 +57,7 @@ public final class ToggleMailCommand implements CommandExecutor {
         if (mode == ToggleMode.TOGGLE) {
             final boolean nowDisabled = chatToggleManager.toggleMail(player.getUniqueId());
             auditLogService.log(player, "TOGGLE_MAIL", "set mail " + (nowDisabled ? "OFF" : "ON"));
+            discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "set mail " + (nowDisabled ? "OFF" : "ON"));
             if (nowDisabled) {
                 player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.toggle-disabled", "&cYou will no longer receive mail.")));
             } else {
@@ -74,6 +79,7 @@ public final class ToggleMailCommand implements CommandExecutor {
 
         chatToggleManager.setMailDisabled(player.getUniqueId(), shouldDisable);
         auditLogService.log(player, "TOGGLE_MAIL", "set mail " + (shouldDisable ? "OFF" : "ON"));
+        discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "set mail " + (shouldDisable ? "OFF" : "ON"));
         if (shouldDisable) {
             player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.toggle-disabled", "&cYou will no longer receive mail.")));
         } else {

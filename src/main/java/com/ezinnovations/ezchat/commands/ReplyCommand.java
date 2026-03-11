@@ -6,6 +6,7 @@ import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.managers.MessageManager;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
+import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.service.MuteService;
 
 import org.bukkit.command.Command;
@@ -26,6 +27,7 @@ public final class ReplyCommand implements CommandExecutor {
     private final IgnoreManager ignoreManager;
     private final CommunicationLogService communicationLogService;
     private final MuteService muteService;
+    private final DiscordNotificationService discordNotificationService;
 
     public ReplyCommand(final EzChat plugin,
                         final FeatureManager featureManager,
@@ -33,7 +35,8 @@ public final class ReplyCommand implements CommandExecutor {
                         final ChatToggleManager chatToggleManager,
                         final IgnoreManager ignoreManager,
                         final CommunicationLogService communicationLogService,
-                        final MuteService muteService) {
+                        final MuteService muteService,
+                        final DiscordNotificationService discordNotificationService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.messageManager = messageManager;
@@ -41,6 +44,7 @@ public final class ReplyCommand implements CommandExecutor {
         this.ignoreManager = ignoreManager;
         this.communicationLogService = communicationLogService;
         this.muteService = muteService;
+        this.discordNotificationService = discordNotificationService;
     }
 
     @Override
@@ -113,6 +117,7 @@ public final class ReplyCommand implements CommandExecutor {
 
         messageManager.updateConversation(player, receiver);
         communicationLogService.logPrivateMessage(player.getUniqueId(), player.getName(), receiver.getUniqueId(), receiver.getName(), message);
+        discordNotificationService.sendPrivateMessage(player.getUniqueId(), player.getName(), receiver.getUniqueId(), receiver.getName(), message);
         return true;
     }
 }
