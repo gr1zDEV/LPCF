@@ -1,0 +1,35 @@
+/* Remove desktop sidebars and keep content centered */
+@media screen and (min-width: 76.25em) {
+  .md-sidebar--primary,
+  .md-sidebar--secondary {
+    display: none;
+  }
+
+  .md-content {
+    margin-inline: auto;
+    max-width: min(100%, 72rem);
+  }
+}
+
+/* Improve mobile readability */
+.md-typeset {
+  line-height: 1.7;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+  scroll-margin-top: 4.5rem;
+}
+
+@media screen and (max-width: 44.9375em) {
+  .md-content__inner {
+    margin: 1rem 0.8rem 2rem;
+  }
+
+  .md-typeset table:not([class]) {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
