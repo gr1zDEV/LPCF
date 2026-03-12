@@ -66,6 +66,13 @@ public final class CommunicationLogService {
         insert("STAFF_ALERT", senderUuid, senderName, null, null, message);
     }
 
+    public void logBroadcast(final UUID senderUuid, final String senderName, final String message) {
+        if (!logsConfig.isLoggingEnabled()) {
+            return;
+        }
+        insert("BROADCAST", senderUuid, senderName, null, null, message);
+    }
+
     public QueryResult findByPlayer(final String playerName, final int page) {
         return find(() -> repository.findByPlayer(playerName, page, logsConfig.getPageSize()), () -> repository.countByPlayer(playerName));
     }

@@ -6,6 +6,7 @@ import com.ezinnovations.ezchat.config.DiscordConfig;
 import com.ezinnovations.ezchat.config.LogsConfig;
 import com.ezinnovations.ezchat.config.MuteConfig;
 import com.ezinnovations.ezchat.config.StaffConfig;
+import com.ezinnovations.ezchat.config.ServerMessageConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -26,6 +27,7 @@ public final class ConfigManager {
     private final DiscordConfig discordConfig;
     private final AntiSpamConfig antiSpamConfig;
     private final StaffConfig staffConfig;
+    private final ServerMessageConfig serverMessageConfig;
 
     public ConfigManager(final EzChat plugin) {
         this.plugin = plugin;
@@ -34,6 +36,7 @@ public final class ConfigManager {
         this.discordConfig = new DiscordConfig(plugin);
         this.antiSpamConfig = new AntiSpamConfig(plugin);
         this.staffConfig = new StaffConfig(plugin);
+        this.serverMessageConfig = new ServerMessageConfig(plugin);
     }
 
     public void reload() {
@@ -58,6 +61,7 @@ public final class ConfigManager {
         discordConfig.reload();
         antiSpamConfig.reload();
         staffConfig.reload();
+        serverMessageConfig.reload();
     }
 
     public FileConfiguration getPrivateMessageConfig() {
@@ -86,5 +90,9 @@ public final class ConfigManager {
 
     public StaffConfig getStaffConfig() {
         return staffConfig;
+    }
+
+    public ServerMessageConfig getServerMessageConfig() {
+        return serverMessageConfig;
     }
 }

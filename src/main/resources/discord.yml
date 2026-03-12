@@ -8,6 +8,7 @@ webhooks:
   mail: ""
   mute-actions: ""
   audit-actions: ""
+  server-broadcasts: ""
 
 webhook:
   use-embeds: true
@@ -28,6 +29,7 @@ events:
   mail: false
   mute-actions: true
   audit-actions: true
+  server-broadcasts: false
 
 format:
   public-chat: "{player}: {message}"
@@ -36,6 +38,8 @@ format:
   mute-action: "[MUTE] {actor} muted {target}"
   temp-mute-action: "[TEMP-MUTE] {actor} temp-muted {target} for {duration}"
   audit-action: "[AUDIT] {actor}: {details}"
+  server-broadcast-console: "[BROADCAST] [Console] {message}"
+  server-broadcast-player: "[BROADCAST] [{sender}] {message}"
 
 messages:
   feature-disabled: "&cDiscord webhook support is disabled."

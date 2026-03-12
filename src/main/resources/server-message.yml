@@ -1,0 +1,21 @@
+features:
+  enabled: true
+
+settings:
+  log-broadcasts: true
+  log-toggle-actions: true
+
+formats:
+  broadcast: "&8[&6Server&8] &f{message}"
+  console-broadcast: "&8[&6Server&8] &7[Console]&f {message}"
+  player-broadcast: "&8[&6Server&8] &7[{sender}]&f {message}"
+
+messages:
+  no-permission: "&cYou do not have permission."
+  feature-disabled: "&cThat feature is currently disabled."
+  toggle-enabled: "&aYou can now receive server messages."
+  toggle-disabled: "&cYou will no longer receive server messages."
+  toggle-already-enabled: "&eServer messages are already enabled."
+  toggle-already-disabled: "&eServer messages are already disabled."
+  toggle-invalid-usage: "&cUsage: /toggleservermsg [on|off]"
+  broadcast-invalid-usage: "&cUsage: /ezchat broadcast <message>"
