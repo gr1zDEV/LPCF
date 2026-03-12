@@ -1,6 +1,7 @@
 package com.ezinnovations.ezchat.managers;
 
 import com.ezinnovations.ezchat.EzChat;
+import com.ezinnovations.ezchat.config.AntiSpamConfig;
 import com.ezinnovations.ezchat.config.DiscordConfig;
 import com.ezinnovations.ezchat.config.LogsConfig;
 import com.ezinnovations.ezchat.config.MuteConfig;
@@ -22,12 +23,14 @@ public final class ConfigManager {
     private final LogsConfig logsConfig;
     private final MuteConfig muteConfig;
     private final DiscordConfig discordConfig;
+    private final AntiSpamConfig antiSpamConfig;
 
     public ConfigManager(final EzChat plugin) {
         this.plugin = plugin;
         this.logsConfig = new LogsConfig(plugin);
         this.muteConfig = new MuteConfig(plugin);
         this.discordConfig = new DiscordConfig(plugin);
+        this.antiSpamConfig = new AntiSpamConfig(plugin);
     }
 
     public void reload() {
@@ -50,6 +53,7 @@ public final class ConfigManager {
         logsConfig.reload();
         muteConfig.reload();
         discordConfig.reload();
+        antiSpamConfig.reload();
     }
 
     public FileConfiguration getPrivateMessageConfig() {
@@ -70,5 +74,9 @@ public final class ConfigManager {
 
     public DiscordConfig getDiscordConfig() {
         return discordConfig;
+    }
+
+    public AntiSpamConfig getAntiSpamConfig() {
+        return antiSpamConfig;
     }
 }
