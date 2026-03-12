@@ -1,0 +1,29 @@
+features:
+  enabled: true
+
+settings:
+  log-death-messages: true
+  use-vanilla-death-message: true
+  default-enabled: true
+
+formats:
+  default: "&8[&4Death&8] &f{message}"
+  player-kill: "&8[&cPvP&8] &f{message}"
+  mob-kill: "&8[&6Mob&8] &f{message}"
+  projectile-kill: "&8[&dProjectile&8] &f{message}"
+  environmental: "&8[&7Death&8] &f{message}"
+
+sound:
+  enabled: true
+  sound: "ENTITY_BLAZE_DEATH"
+  volume: 1.0
+  pitch: 1.0
+
+messages:
+  no-permission: "&cYou do not have permission."
+  feature-disabled: "&cThat feature is currently disabled."
+  toggle-enabled: "&aYou can now receive death messages."
+  toggle-disabled: "&cYou will no longer receive death messages."
+  toggle-already-enabled: "&eDeath messages are already enabled."
+  toggle-already-disabled: "&eDeath messages are already disabled."
+  toggle-invalid-usage: "&cUsage: /toggledeathmsg [on|off]"

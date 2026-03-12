@@ -115,6 +115,23 @@ public final class DiscordNotificationService {
         );
     }
 
+
+    public void sendDeathMessage(final UUID playerUuid,
+                                 final String playerName,
+                                 final String message) {
+        webhookService.send(
+                DiscordEventType.DEATH_MESSAGES,
+                playerUuid,
+                playerName,
+                "death-message",
+                "[DEATH] {player}: {message}",
+                Map.of(
+                        "player", playerName,
+                        "message", message
+                )
+        );
+    }
+
     public void sendAuditAction(final UUID actorUuid,
                                 final String actorName,
                                 final String details) {

@@ -52,6 +52,14 @@ public final class CommunicationLogService {
         insert("MAIL", senderUuid, senderName, receiverUuid, receiverName, message);
     }
 
+
+    public void logDeath(final UUID senderUuid, final String senderName, final String message) {
+        if (!logsConfig.isLoggingEnabled()) {
+            return;
+        }
+        insert("DEATH", senderUuid, senderName, null, null, message);
+    }
+
     public void logStaffChat(final UUID senderUuid, final String senderName, final String message) {
         if (!logsConfig.isLoggingEnabled()) {
             return;

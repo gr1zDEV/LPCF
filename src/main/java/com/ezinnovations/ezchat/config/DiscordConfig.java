@@ -48,6 +48,7 @@ public final class DiscordConfig {
             case MUTE_ACTIONS -> "webhooks.mute-actions";
             case AUDIT_ACTIONS -> "webhooks.audit-actions";
             case SERVER_BROADCASTS -> "webhooks.server-broadcasts";
+            case DEATH_MESSAGES -> "webhooks.death-messages";
         };
         return trim(config.getString(path, ""));
     }
@@ -60,6 +61,7 @@ public final class DiscordConfig {
             case MUTE_ACTIONS -> "events.mute-actions";
             case AUDIT_ACTIONS -> "events.audit-actions";
             case SERVER_BROADCASTS -> "events.server-broadcasts";
+            case DEATH_MESSAGES -> "events.death-messages";
         };
         return config.getBoolean(path, false);
     }

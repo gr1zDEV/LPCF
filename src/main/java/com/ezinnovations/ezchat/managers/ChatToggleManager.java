@@ -13,11 +13,13 @@ public final class ChatToggleManager {
 
     private final EzChat plugin;
     private final ToggleRepository toggleRepository;
+    private final Set<UUID> knownTogglePlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> hiddenChatPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> privateMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> mailDisabledPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> serverMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> staffChatModeEnabledPlayers = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> deathMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
 
     public ChatToggleManager(final EzChat plugin, final ToggleRepository toggleRepository) {
         this.plugin = plugin;
@@ -25,16 +27,19 @@ public final class ChatToggleManager {
     }
 
     public void load() {
+        knownTogglePlayers.clear();
         hiddenChatPlayers.clear();
         privateMessagesDisabledPlayers.clear();
         mailDisabledPlayers.clear();
         serverMessagesDisabledPlayers.clear();
         staffChatModeEnabledPlayers.clear();
+        deathMessagesDisabledPlayers.clear();
 
         try {
             final Map<UUID, ToggleRepository.ToggleState> toggles = toggleRepository.loadAll();
             for (final Map.Entry<UUID, ToggleRepository.ToggleState> entry : toggles.entrySet()) {
                 final UUID uuid = entry.getKey();
+                knownTogglePlayers.add(uuid);
                 final ToggleRepository.ToggleState state = entry.getValue();
                 if (!state.chatEnabled()) {
                     hiddenChatPlayers.add(uuid);
@@ -51,10 +56,18 @@ public final class ChatToggleManager {
                 if (state.staffChatModeEnabled()) {
                     staffChatModeEnabledPlayers.add(uuid);
                 }
+                if (!state.deathMessagesEnabled()) {
+                    deathMessagesDisabledPlayers.add(uuid);
+                }
             }
         } catch (final SQLException exception) {
             plugin.getLogger().severe("Failed to load toggle data from SQLite: " + exception.getMessage());
         }
+    }
+
+
+    public boolean hasToggleState(final UUID uuid) {
+        return knownTogglePlayers.contains(uuid);
     }
 
     public boolean isChatHidden(final UUID uuid) {
@@ -217,6 +230,39 @@ public final class ChatToggleManager {
         return nowEnabled;
     }
 
+
+    public boolean areDeathMessagesDisabled(final UUID uuid) {
+        return deathMessagesDisabledPlayers.contains(uuid);
+    }
+
+    public boolean setDeathMessagesDisabled(final UUID uuid, final boolean disabled) {
+        final boolean changed;
+        if (disabled) {
+            changed = deathMessagesDisabledPlayers.add(uuid);
+        } else {
+            changed = deathMessagesDisabledPlayers.remove(uuid);
+        }
+
+        if (changed) {
+            persist(uuid);
+        }
+
+        return changed;
+    }
+
+    public boolean toggleDeathMessages(final UUID uuid) {
+        final boolean nowDisabled;
+        if (deathMessagesDisabledPlayers.contains(uuid)) {
+            deathMessagesDisabledPlayers.remove(uuid);
+            nowDisabled = false;
+        } else {
+            deathMessagesDisabledPlayers.add(uuid);
+            nowDisabled = true;
+        }
+        persist(uuid);
+        return nowDisabled;
+    }
+
     public void save() {
         // Persistence is immediate.
     }
@@ -229,7 +275,8 @@ public final class ChatToggleManager {
                     !privateMessagesDisabledPlayers.contains(uuid),
                     !mailDisabledPlayers.contains(uuid),
                     !serverMessagesDisabledPlayers.contains(uuid),
-                    staffChatModeEnabledPlayers.contains(uuid)
+                    staffChatModeEnabledPlayers.contains(uuid),
+                    !deathMessagesDisabledPlayers.contains(uuid)
             );
         } catch (final SQLException exception) {
             plugin.getLogger().warning("Failed to persist toggle for " + uuid + ": " + exception.getMessage());

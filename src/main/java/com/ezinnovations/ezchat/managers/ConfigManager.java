@@ -2,6 +2,7 @@ package com.ezinnovations.ezchat.managers;
 
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.config.AntiSpamConfig;
+import com.ezinnovations.ezchat.config.DeathMessageConfig;
 import com.ezinnovations.ezchat.config.DiscordConfig;
 import com.ezinnovations.ezchat.config.LogsConfig;
 import com.ezinnovations.ezchat.config.MuteConfig;
@@ -28,6 +29,7 @@ public final class ConfigManager {
     private final AntiSpamConfig antiSpamConfig;
     private final StaffConfig staffConfig;
     private final ServerMessageConfig serverMessageConfig;
+    private final DeathMessageConfig deathMessageConfig;
 
     public ConfigManager(final EzChat plugin) {
         this.plugin = plugin;
@@ -37,6 +39,7 @@ public final class ConfigManager {
         this.antiSpamConfig = new AntiSpamConfig(plugin);
         this.staffConfig = new StaffConfig(plugin);
         this.serverMessageConfig = new ServerMessageConfig(plugin);
+        this.deathMessageConfig = new DeathMessageConfig(plugin);
     }
 
     public void reload() {
@@ -62,6 +65,7 @@ public final class ConfigManager {
         antiSpamConfig.reload();
         staffConfig.reload();
         serverMessageConfig.reload();
+        deathMessageConfig.reload();
     }
 
     public FileConfiguration getPrivateMessageConfig() {
@@ -94,5 +98,9 @@ public final class ConfigManager {
 
     public ServerMessageConfig getServerMessageConfig() {
         return serverMessageConfig;
+    }
+
+    public DeathMessageConfig getDeathMessageConfig() {
+        return deathMessageConfig;
     }
 }

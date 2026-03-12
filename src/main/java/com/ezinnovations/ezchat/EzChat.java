@@ -14,6 +14,7 @@ import com.ezinnovations.ezchat.commands.ToggleMsgCommand;
 import com.ezinnovations.ezchat.commands.StaffChatCommand;
 import com.ezinnovations.ezchat.commands.ToggleStaffChatCommand;
 import com.ezinnovations.ezchat.commands.ToggleServerMessageCommand;
+import com.ezinnovations.ezchat.commands.ToggleDeathMessageCommand;
 import com.ezinnovations.ezchat.commands.StaffAlertSubcommand;
 import com.ezinnovations.ezchat.database.DatabaseManager;
 import com.ezinnovations.ezchat.database.SQLiteManager;
@@ -29,6 +30,7 @@ import com.ezinnovations.ezchat.discord.DiscordWebhookRouter;
 import com.ezinnovations.ezchat.discord.DiscordWebhookService;
 import com.ezinnovations.ezchat.listeners.PaperChatListener;
 import com.ezinnovations.ezchat.listeners.PlayerJoinListener;
+import com.ezinnovations.ezchat.listeners.DeathMessageListener;
 import com.ezinnovations.ezchat.moderation.AdvertisingCheckService;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.managers.ConfigManager;
@@ -43,6 +45,7 @@ import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.service.StaffAlertService;
 import com.ezinnovations.ezchat.service.StaffChatService;
 import com.ezinnovations.ezchat.service.ServerMessageService;
+import com.ezinnovations.ezchat.service.DeathMessageService;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.luckperms.api.LuckPerms;
@@ -97,6 +100,7 @@ public final class EzChat extends JavaPlugin {
         saveResource("anti-spam.yml", false);
         saveResource("staff.yml", false);
         saveResource("server-message.yml", false);
+        saveResource("death-message.yml", false);
         this.configManager = new ConfigManager(this);
         this.configManager.reload();
         this.featureManager = new FeatureManager(this);
@@ -130,6 +134,7 @@ public final class EzChat extends JavaPlugin {
         this.staffAlertSubcommand = new StaffAlertSubcommand(this, configManager.getStaffConfig(), this.staffAlertService);
         final ServerMessageService serverMessageService = new ServerMessageService(this, configManager.getServerMessageConfig(), this.chatToggleManager, communicationLogService, auditLogService, discordNotificationService);
         this.broadcastSubcommand = new BroadcastSubcommand(this, configManager.getServerMessageConfig(), serverMessageService);
+        final DeathMessageService deathMessageService = new DeathMessageService(this, configManager.getDeathMessageConfig(), this.chatToggleManager, communicationLogService, discordNotificationService);
         this.messageManager = new MessageManager();
         this.ignoreManager = new IgnoreManager(this, ignoreRepository);
         this.ignoreManager.load();
@@ -142,6 +147,7 @@ public final class EzChat extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.featureManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.staffChatService), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this, this.featureManager, this.mailManager), this);
+        getServer().getPluginManager().registerEvents(new DeathMessageListener(deathMessageService), this);
 
         if (getCommand("togglechat") != null) {
             getCommand("togglechat").setExecutor(new ChatToggleCommand(this, this.featureManager, this.chatToggleManager, auditLogService, discordNotificationService));
@@ -190,6 +196,12 @@ public final class EzChat extends JavaPlugin {
             getLogger().warning("[EzChat] Failed to register /toggleservermsg command.");
         }
 
+
+        if (getCommand("toggledeathmsg") != null) {
+            getCommand("toggledeathmsg").setExecutor(new ToggleDeathMessageCommand(this, this.configManager.getDeathMessageConfig(), deathMessageService));
+        } else {
+            getLogger().warning("[EzChat] Failed to register /toggledeathmsg command.");
+        }
 
         if (getCommand("staffchat") != null) {
             getCommand("staffchat").setExecutor(new StaffChatCommand(this, this.configManager.getStaffConfig(), this.staffChatService));
