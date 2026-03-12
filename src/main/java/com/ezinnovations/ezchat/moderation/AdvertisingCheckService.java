@@ -4,6 +4,7 @@ import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.config.AntiSpamConfig;
 import com.ezinnovations.ezchat.service.AuditLogService;
 import com.ezinnovations.ezchat.service.DiscordNotificationService;
+import com.ezinnovations.ezchat.service.StaffAlertService;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -29,17 +30,20 @@ public final class AdvertisingCheckService {
     private final AntiSpamConfig antiSpamConfig;
     private final AuditLogService auditLogService;
     private final DiscordNotificationService discordNotificationService;
+    private final StaffAlertService staffAlertService;
 
     private final List<Pattern> customPatterns = new ArrayList<>();
 
     public AdvertisingCheckService(final EzChat plugin,
                                    final AntiSpamConfig antiSpamConfig,
                                    final AuditLogService auditLogService,
-                                   final DiscordNotificationService discordNotificationService) {
+                                   final DiscordNotificationService discordNotificationService,
+                                   final StaffAlertService staffAlertService) {
         this.plugin = plugin;
         this.antiSpamConfig = antiSpamConfig;
         this.auditLogService = auditLogService;
         this.discordNotificationService = discordNotificationService;
+        this.staffAlertService = staffAlertService;
         rebuildCustomPatterns();
     }
 
@@ -120,6 +124,9 @@ public final class AdvertisingCheckService {
         }
         if (antiSpamConfig.isDiscordLogEnabled()) {
             discordNotificationService.sendAuditAction(actor.getUniqueId(), actor.getName(), auditDetails);
+        }
+        if (staffAlertService.isAlertsEnabled()) {
+            staffAlertService.sendStaffAlert("Advertising blocked from " + actor.getName() + " [" + detectionResult.type() + "]: " + detectionResult.match());
         }
 
         return true;

@@ -9,6 +9,7 @@ import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
 import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.service.MuteService;
+import com.ezinnovations.ezchat.service.StaffChatService;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 
 import io.papermc.paper.event.player.AsyncChatEvent;
@@ -34,6 +35,7 @@ public final class PaperChatListener implements Listener {
     private final MuteService muteService;
     private final DiscordNotificationService discordNotificationService;
     private final AdvertisingCheckService advertisingCheckService;
+    private final StaffChatService staffChatService;
 
     public PaperChatListener(final EzChat plugin,
                              final FeatureManager featureManager,
@@ -43,7 +45,8 @@ public final class PaperChatListener implements Listener {
                              final CommunicationLogService communicationLogService,
                              final MuteService muteService,
                              final DiscordNotificationService discordNotificationService,
-                             final AdvertisingCheckService advertisingCheckService) {
+                             final AdvertisingCheckService advertisingCheckService,
+                             final StaffChatService staffChatService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.chatToggleManager = chatToggleManager;
@@ -53,6 +56,7 @@ public final class PaperChatListener implements Listener {
         this.muteService = muteService;
         this.discordNotificationService = discordNotificationService;
         this.advertisingCheckService = advertisingCheckService;
+        this.staffChatService = staffChatService;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -67,19 +71,26 @@ public final class PaperChatListener implements Listener {
             return;
         }
 
-        if (advertisingCheckService.shouldScanPublicChat() && !advertisingCheckService.shouldBypass(event.getPlayer())) {
+        final Player player = event.getPlayer();
+
+        if (advertisingCheckService.shouldScanPublicChat() && !advertisingCheckService.shouldBypass(player)) {
             final String rawMessage = LegacyComponentSerializer.legacySection().serialize(event.message());
             final AdvertisingDetectionResult detectionResult = advertisingCheckService.checkAdvertising(rawMessage);
-            if (advertisingCheckService.handleBlockedMessage(event.getPlayer(), AdvertisingCheckService.CommunicationType.PUBLIC, detectionResult, rawMessage)) {
+            if (advertisingCheckService.handleBlockedMessage(player, AdvertisingCheckService.CommunicationType.PUBLIC, detectionResult, rawMessage)) {
                 event.setCancelled(true);
                 return;
             }
         }
 
-        final UUID senderUuid = event.getPlayer().getUniqueId();
-        event.viewers().removeIf(viewerAudience -> !shouldReceiveAudience(viewerAudience, senderUuid));
+        if (staffChatService.isFeatureEnabled() && staffChatService.isStaffChatModeEnabled(player.getUniqueId()) && player.hasPermission("ezchat.staffchat")) {
+            event.setCancelled(true);
+            final String message = plugin.processMessage(player, LegacyComponentSerializer.legacySection().serialize(event.message()));
+            staffChatService.sendStaffChat(player, message);
+            return;
+        }
 
-        final Player player = event.getPlayer();
+        final UUID senderUuid = player.getUniqueId();
+        event.viewers().removeIf(viewerAudience -> !shouldReceiveAudience(viewerAudience, senderUuid));
 
         final String format = plugin.buildFormat(player);
         final String processedMessage = plugin.processMessage(player,

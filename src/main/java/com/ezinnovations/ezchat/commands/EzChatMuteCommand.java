@@ -4,6 +4,7 @@ import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.service.AuditLogService;
 import com.ezinnovations.ezchat.service.MuteService;
 import com.ezinnovations.ezchat.service.DiscordNotificationService;
+import com.ezinnovations.ezchat.service.StaffAlertService;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -16,12 +17,14 @@ public final class EzChatMuteCommand {
     private final MuteService muteService;
     private final AuditLogService auditLogService;
     private final DiscordNotificationService discordNotificationService;
+    private final StaffAlertService staffAlertService;
 
-    public EzChatMuteCommand(final EzChat plugin, final MuteService muteService, final AuditLogService auditLogService, final DiscordNotificationService discordNotificationService) {
+    public EzChatMuteCommand(final EzChat plugin, final MuteService muteService, final AuditLogService auditLogService, final DiscordNotificationService discordNotificationService, final StaffAlertService staffAlertService) {
         this.plugin = plugin;
         this.muteService = muteService;
         this.auditLogService = auditLogService;
         this.discordNotificationService = discordNotificationService;
+        this.staffAlertService = staffAlertService;
     }
 
     public boolean execute(final CommandSender sender, final String[] args) {
@@ -64,6 +67,9 @@ public final class EzChatMuteCommand {
                 .replace("{player}", targetName)));
         auditLogService.log(actorUuid, actorName, "MUTE_SET", "muted " + targetName + " permanently");
         discordNotificationService.sendMuteAction(actorUuid, actorName, targetName, "", false);
+        if (staffAlertService.isAlertsEnabled()) {
+            staffAlertService.sendStaffAlert("Player muted: " + targetName + " by " + actorName);
+        }
         return true;
     }
 

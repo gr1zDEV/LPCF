@@ -16,6 +16,7 @@ public final class ChatToggleManager {
     private final Set<UUID> hiddenChatPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> privateMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> mailDisabledPlayers = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> staffChatModeEnabledPlayers = ConcurrentHashMap.newKeySet();
 
     public ChatToggleManager(final EzChat plugin, final ToggleRepository toggleRepository) {
         this.plugin = plugin;
@@ -26,6 +27,7 @@ public final class ChatToggleManager {
         hiddenChatPlayers.clear();
         privateMessagesDisabledPlayers.clear();
         mailDisabledPlayers.clear();
+        staffChatModeEnabledPlayers.clear();
 
         try {
             final Map<UUID, ToggleRepository.ToggleState> toggles = toggleRepository.loadAll();
@@ -40,6 +42,9 @@ public final class ChatToggleManager {
                 }
                 if (!state.mailEnabled()) {
                     mailDisabledPlayers.add(uuid);
+                }
+                if (state.staffChatModeEnabled()) {
+                    staffChatModeEnabledPlayers.add(uuid);
                 }
             }
         } catch (final SQLException exception) {
@@ -143,6 +148,38 @@ public final class ChatToggleManager {
         return nowDisabled;
     }
 
+    public boolean isStaffChatModeEnabled(final UUID uuid) {
+        return staffChatModeEnabledPlayers.contains(uuid);
+    }
+
+    public boolean setStaffChatModeEnabled(final UUID uuid, final boolean enabled) {
+        final boolean changed;
+        if (enabled) {
+            changed = staffChatModeEnabledPlayers.add(uuid);
+        } else {
+            changed = staffChatModeEnabledPlayers.remove(uuid);
+        }
+
+        if (changed) {
+            persist(uuid);
+        }
+
+        return changed;
+    }
+
+    public boolean toggleStaffChatMode(final UUID uuid) {
+        final boolean nowEnabled;
+        if (staffChatModeEnabledPlayers.contains(uuid)) {
+            staffChatModeEnabledPlayers.remove(uuid);
+            nowEnabled = false;
+        } else {
+            staffChatModeEnabledPlayers.add(uuid);
+            nowEnabled = true;
+        }
+        persist(uuid);
+        return nowEnabled;
+    }
+
     public void save() {
         // Persistence is immediate.
     }
@@ -153,7 +190,8 @@ public final class ChatToggleManager {
                     uuid,
                     !hiddenChatPlayers.contains(uuid),
                     !privateMessagesDisabledPlayers.contains(uuid),
-                    !mailDisabledPlayers.contains(uuid)
+                    !mailDisabledPlayers.contains(uuid),
+                    staffChatModeEnabledPlayers.contains(uuid)
             );
         } catch (final SQLException exception) {
             plugin.getLogger().warning("Failed to persist toggle for " + uuid + ": " + exception.getMessage());
