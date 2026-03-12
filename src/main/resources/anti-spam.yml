@@ -1,0 +1,38 @@
+features:
+  enabled: true
+  anti-advertising:
+    enabled: true
+
+checks:
+  public-chat: true
+  private-messages: true
+  mail: false
+
+patterns:
+  block-ipv4: true
+  block-domains: true
+  block-discord-invites: true
+  custom-blocked:
+    - ""
+
+whitelist:
+  domains:
+    - "youtube.com"
+    - "youtu.be"
+    - "discord.com"
+  exact:
+    - ""
+
+actions:
+  block-message: true
+  notify-sender: true
+  audit-log: true
+  discord-log: false
+  include-blocked-content-in-audit: true
+
+permissions:
+  bypass: "ezchat.bypass.advertising"
+
+messages:
+  blocked: "&cAdvertising is not allowed."
+  feature-disabled: "&cThat feature is currently disabled."

@@ -2,6 +2,8 @@ package com.ezinnovations.ezchat.listeners;
 
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
+import com.ezinnovations.ezchat.moderation.AdvertisingCheckService;
+import com.ezinnovations.ezchat.moderation.AdvertisingDetectionResult;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
@@ -31,6 +33,7 @@ public final class PaperChatListener implements Listener {
     private final CommunicationLogService communicationLogService;
     private final MuteService muteService;
     private final DiscordNotificationService discordNotificationService;
+    private final AdvertisingCheckService advertisingCheckService;
 
     public PaperChatListener(final EzChat plugin,
                              final FeatureManager featureManager,
@@ -39,7 +42,8 @@ public final class PaperChatListener implements Listener {
                              final FloodgateHook floodgateHook,
                              final CommunicationLogService communicationLogService,
                              final MuteService muteService,
-                             final DiscordNotificationService discordNotificationService) {
+                             final DiscordNotificationService discordNotificationService,
+                             final AdvertisingCheckService advertisingCheckService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.chatToggleManager = chatToggleManager;
@@ -48,6 +52,7 @@ public final class PaperChatListener implements Listener {
         this.communicationLogService = communicationLogService;
         this.muteService = muteService;
         this.discordNotificationService = discordNotificationService;
+        this.advertisingCheckService = advertisingCheckService;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -60,6 +65,15 @@ public final class PaperChatListener implements Listener {
             event.setCancelled(true);
             muteService.sendMuteBlockedMessage(event.getPlayer(), "muted-chat", "&cYou are muted and cannot send chat messages.");
             return;
+        }
+
+        if (advertisingCheckService.shouldScanPublicChat() && !advertisingCheckService.shouldBypass(event.getPlayer())) {
+            final String rawMessage = LegacyComponentSerializer.legacySection().serialize(event.message());
+            final AdvertisingDetectionResult detectionResult = advertisingCheckService.checkAdvertising(rawMessage);
+            if (advertisingCheckService.handleBlockedMessage(event.getPlayer(), AdvertisingCheckService.CommunicationType.PUBLIC, detectionResult, rawMessage)) {
+                event.setCancelled(true);
+                return;
+            }
         }
 
         final UUID senderUuid = event.getPlayer().getUniqueId();
