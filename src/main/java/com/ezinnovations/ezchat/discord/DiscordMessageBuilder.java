@@ -45,6 +45,8 @@ public final class DiscordMessageBuilder {
             case MUTE_ACTIONS -> "Mute Action";
             case AUDIT_ACTIONS -> "Audit Action";
             case SERVER_BROADCASTS -> "Server Broadcast";
+            case DEATH_MESSAGES -> "Death Message";
+            default -> "Notification";
         };
 
         fields.add("\"embeds\":[{" + jsonField("title", title) + "," + jsonField("description", content) + "}]");

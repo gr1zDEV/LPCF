@@ -15,6 +15,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,12 +28,10 @@ public final class DeathMessageService {
             EntityDamageEvent.DamageCause.LAVA,
             EntityDamageEvent.DamageCause.DROWNING,
             EntityDamageEvent.DamageCause.VOID,
-            EntityDamageEvent.DamageCause.CACTUS,
             EntityDamageEvent.DamageCause.SUFFOCATION,
             EntityDamageEvent.DamageCause.DRYOUT,
             EntityDamageEvent.DamageCause.FREEZE,
             EntityDamageEvent.DamageCause.HOT_FLOOR,
-            EntityDamageEvent.DamageCause.SWEET_BERRY_BUSH,
             EntityDamageEvent.DamageCause.WITHER,
             EntityDamageEvent.DamageCause.POISON,
             EntityDamageEvent.DamageCause.STARVATION,
@@ -128,11 +127,19 @@ public final class DeathMessageService {
             return DeathMessageCategory.MOB_KILL;
         }
 
-        if (lastDamage != null && ENVIRONMENTAL_CAUSES.contains(lastDamage.getCause())) {
-            return DeathMessageCategory.ENVIRONMENTAL;
+        if (lastDamage != null) {
+            final EntityDamageEvent.DamageCause cause = lastDamage.getCause();
+            if (ENVIRONMENTAL_CAUSES.contains(cause) || isVersionSafeEnvironmentalCause(cause)) {
+                return DeathMessageCategory.ENVIRONMENTAL;
+            }
         }
 
         return DeathMessageCategory.DEFAULT;
+    }
+
+    private boolean isVersionSafeEnvironmentalCause(final EntityDamageEvent.DamageCause cause) {
+        final String causeName = cause.name().toUpperCase(Locale.ROOT);
+        return "CACTUS".equals(causeName) || "SWEET_BERRY_BUSH".equals(causeName);
     }
 
     private String resolveBaseMessage(final PlayerDeathEvent event, final Player deadPlayer) {
