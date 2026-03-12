@@ -47,6 +47,7 @@ public final class DiscordConfig {
             case MAIL -> "webhooks.mail";
             case MUTE_ACTIONS -> "webhooks.mute-actions";
             case AUDIT_ACTIONS -> "webhooks.audit-actions";
+            case SERVER_BROADCASTS -> "webhooks.server-broadcasts";
         };
         return trim(config.getString(path, ""));
     }
@@ -58,6 +59,7 @@ public final class DiscordConfig {
             case MAIL -> "events.mail";
             case MUTE_ACTIONS -> "events.mute-actions";
             case AUDIT_ACTIONS -> "events.audit-actions";
+            case SERVER_BROADCASTS -> "events.server-broadcasts";
         };
         return config.getBoolean(path, false);
     }

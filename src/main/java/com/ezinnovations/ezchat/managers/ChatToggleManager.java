@@ -16,6 +16,7 @@ public final class ChatToggleManager {
     private final Set<UUID> hiddenChatPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> privateMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> mailDisabledPlayers = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> serverMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> staffChatModeEnabledPlayers = ConcurrentHashMap.newKeySet();
 
     public ChatToggleManager(final EzChat plugin, final ToggleRepository toggleRepository) {
@@ -27,6 +28,7 @@ public final class ChatToggleManager {
         hiddenChatPlayers.clear();
         privateMessagesDisabledPlayers.clear();
         mailDisabledPlayers.clear();
+        serverMessagesDisabledPlayers.clear();
         staffChatModeEnabledPlayers.clear();
 
         try {
@@ -42,6 +44,9 @@ public final class ChatToggleManager {
                 }
                 if (!state.mailEnabled()) {
                     mailDisabledPlayers.add(uuid);
+                }
+                if (!state.serverMessagesEnabled()) {
+                    serverMessagesDisabledPlayers.add(uuid);
                 }
                 if (state.staffChatModeEnabled()) {
                     staffChatModeEnabledPlayers.add(uuid);
@@ -148,6 +153,38 @@ public final class ChatToggleManager {
         return nowDisabled;
     }
 
+
+    public boolean areServerMessagesDisabled(final UUID uuid) {
+        return serverMessagesDisabledPlayers.contains(uuid);
+    }
+
+    public boolean setServerMessagesDisabled(final UUID uuid, final boolean disabled) {
+        final boolean changed;
+        if (disabled) {
+            changed = serverMessagesDisabledPlayers.add(uuid);
+        } else {
+            changed = serverMessagesDisabledPlayers.remove(uuid);
+        }
+
+        if (changed) {
+            persist(uuid);
+        }
+
+        return changed;
+    }
+
+    public boolean toggleServerMessages(final UUID uuid) {
+        final boolean nowDisabled;
+        if (serverMessagesDisabledPlayers.contains(uuid)) {
+            serverMessagesDisabledPlayers.remove(uuid);
+            nowDisabled = false;
+        } else {
+            serverMessagesDisabledPlayers.add(uuid);
+            nowDisabled = true;
+        }
+        persist(uuid);
+        return nowDisabled;
+    }
     public boolean isStaffChatModeEnabled(final UUID uuid) {
         return staffChatModeEnabledPlayers.contains(uuid);
     }
@@ -191,6 +228,7 @@ public final class ChatToggleManager {
                     !hiddenChatPlayers.contains(uuid),
                     !privateMessagesDisabledPlayers.contains(uuid),
                     !mailDisabledPlayers.contains(uuid),
+                    !serverMessagesDisabledPlayers.contains(uuid),
                     staffChatModeEnabledPlayers.contains(uuid)
             );
         } catch (final SQLException exception) {

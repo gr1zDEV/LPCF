@@ -93,6 +93,28 @@ public final class DiscordNotificationService {
         );
     }
 
+
+    public void sendServerBroadcast(final org.bukkit.command.CommandSender sender, final String message) {
+        final String senderName = sender.getName();
+        final boolean fromConsole = !(sender instanceof Player);
+        final String formatKey = fromConsole ? "server-broadcast-console" : "server-broadcast-player";
+        final String fallback = fromConsole
+                ? "[BROADCAST] [Console] {message}"
+                : "[BROADCAST] [{sender}] {message}";
+
+        webhookService.send(
+                DiscordEventType.SERVER_BROADCASTS,
+                sender instanceof Player player ? player.getUniqueId() : null,
+                senderName,
+                formatKey,
+                fallback,
+                Map.of(
+                        "sender", senderName,
+                        "message", message
+                )
+        );
+    }
+
     public void sendAuditAction(final UUID actorUuid,
                                 final String actorName,
                                 final String details) {

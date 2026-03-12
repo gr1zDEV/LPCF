@@ -5,5 +5,6 @@ public enum DiscordEventType {
     PRIVATE_MESSAGES,
     MAIL,
     MUTE_ACTIONS,
-    AUDIT_ACTIONS
+    AUDIT_ACTIONS,
+    SERVER_BROADCASTS
 }
