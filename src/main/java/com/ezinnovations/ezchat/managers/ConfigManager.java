@@ -5,6 +5,7 @@ import com.ezinnovations.ezchat.config.AntiSpamConfig;
 import com.ezinnovations.ezchat.config.DiscordConfig;
 import com.ezinnovations.ezchat.config.LogsConfig;
 import com.ezinnovations.ezchat.config.MuteConfig;
+import com.ezinnovations.ezchat.config.StaffConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -24,6 +25,7 @@ public final class ConfigManager {
     private final MuteConfig muteConfig;
     private final DiscordConfig discordConfig;
     private final AntiSpamConfig antiSpamConfig;
+    private final StaffConfig staffConfig;
 
     public ConfigManager(final EzChat plugin) {
         this.plugin = plugin;
@@ -31,6 +33,7 @@ public final class ConfigManager {
         this.muteConfig = new MuteConfig(plugin);
         this.discordConfig = new DiscordConfig(plugin);
         this.antiSpamConfig = new AntiSpamConfig(plugin);
+        this.staffConfig = new StaffConfig(plugin);
     }
 
     public void reload() {
@@ -54,6 +57,7 @@ public final class ConfigManager {
         muteConfig.reload();
         discordConfig.reload();
         antiSpamConfig.reload();
+        staffConfig.reload();
     }
 
     public FileConfiguration getPrivateMessageConfig() {
@@ -78,5 +82,9 @@ public final class ConfigManager {
 
     public AntiSpamConfig getAntiSpamConfig() {
         return antiSpamConfig;
+    }
+
+    public StaffConfig getStaffConfig() {
+        return staffConfig;
     }
 }

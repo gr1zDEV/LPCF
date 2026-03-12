@@ -10,7 +10,7 @@ softdepend: [PlaceholderAPI, floodgate, Geyser-Spigot]
 commands:
   ezchat:
     description: EzChat commands.
-    usage: "Usage: /ezchat <reload|clear|debug|logs|mute|mutetemp>"
+    usage: "Usage: /ezchat <reload|clear|debug|logs|mute|mutetemp|staffalert>"
   togglechat:
     description: Toggle receiving public chat.
     usage: "Usage: /togglechat [on|off]"
@@ -35,6 +35,18 @@ commands:
     description: Toggle receiving mail
     usage: "Usage: /togglemail [on|off]"
     permission: ezchat.togglemail
+  staffchat:
+    description: Send a staff chat message.
+    usage: "Usage: /staffchat <message>"
+    permission: ezchat.staffchat
+  sc:
+    description: Alias of /staffchat.
+    usage: "Usage: /sc <message>"
+    permission: ezchat.staffchat
+  togglestaffchat:
+    description: Toggle staff chat mode for normal chat messages.
+    usage: "Usage: /togglestaffchat"
+    permission: ezchat.staffchat.toggle
 permissions:
   ezchat.reload:
     description: Allows use of /ezchat reload
@@ -97,4 +109,17 @@ permissions:
     default: op
   ezchat.mutetemp:
     description: Allows use of /ezchat mutetemp
+    default: op
+
+  ezchat.staffchat:
+    description: Allows sending and receiving staff chat.
+    default: op
+  ezchat.staffchat.toggle:
+    description: Allows use of /togglestaffchat.
+    default: op
+  ezchat.staffalerts:
+    description: Allows receiving staff alerts.
+    default: op
+  ezchat.staffalerts.send:
+    description: Allows sending /ezchat staffalert as a player.
     default: op

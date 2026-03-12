@@ -1,0 +1,24 @@
+features:
+  staff-chat:
+    enabled: true
+  staff-alerts:
+    enabled: true
+  console-staff-alert-command:
+    enabled: true
+
+settings:
+  log-staff-chat: true
+  log-staff-alerts: true
+
+formats:
+  staff-chat: "&8[&bStaff&8] &f{sender}: &b{message}"
+  staff-alert: "&8[&cAlert&8] &f{message}"
+  console-staff-alert: "&8[&cAlert&8] &7[Console]&f {message}"
+
+messages:
+  no-permission: "&cYou do not have permission."
+  feature-disabled: "&cThat feature is currently disabled."
+  toggle-enabled: "&aStaff chat mode enabled."
+  toggle-disabled: "&cStaff chat mode disabled."
+  invalid-usage-staffchat: "&cUsage: /staffchat <message>"
+  invalid-usage-staffalert: "&cUsage: /ezchat staffalert <message>"

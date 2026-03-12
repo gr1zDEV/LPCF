@@ -52,6 +52,20 @@ public final class CommunicationLogService {
         insert("MAIL", senderUuid, senderName, receiverUuid, receiverName, message);
     }
 
+    public void logStaffChat(final UUID senderUuid, final String senderName, final String message) {
+        if (!logsConfig.isLoggingEnabled()) {
+            return;
+        }
+        insert("STAFF", senderUuid, senderName, null, null, message);
+    }
+
+    public void logStaffAlert(final UUID senderUuid, final String senderName, final String message) {
+        if (!logsConfig.isLoggingEnabled()) {
+            return;
+        }
+        insert("STAFF_ALERT", senderUuid, senderName, null, null, message);
+    }
+
     public QueryResult findByPlayer(final String playerName, final int page) {
         return find(() -> repository.findByPlayer(playerName, page, logsConfig.getPageSize()), () -> repository.countByPlayer(playerName));
     }

@@ -45,9 +45,11 @@ public final class SQLiteManager implements DatabaseManager {
                         chat_enabled INTEGER NOT NULL,
                         msg_enabled INTEGER NOT NULL,
                         mail_enabled INTEGER NOT NULL,
+                        staff_chat_mode_enabled INTEGER NOT NULL DEFAULT 0,
                         FOREIGN KEY(player_uuid) REFERENCES players(uuid)
                     )
                     """);
+            ensureColumn(statement, "ALTER TABLE toggles ADD COLUMN staff_chat_mode_enabled INTEGER NOT NULL DEFAULT 0");
             statement.execute("""
                     CREATE TABLE IF NOT EXISTS ignores (
                         owner_uuid TEXT NOT NULL,
@@ -119,6 +121,14 @@ public final class SQLiteManager implements DatabaseManager {
             statement.execute("CREATE INDEX IF NOT EXISTS idx_mutes_expires_at ON mutes(expires_at)");
         } catch (final SQLException exception) {
             plugin.getLogger().severe("Failed to initialize SQLite database: " + exception.getMessage());
+        }
+    }
+
+    private void ensureColumn(final Statement statement, final String alterSql) throws SQLException {
+        try {
+            statement.execute(alterSql);
+        } catch (final SQLException ignored) {
+            // Column may already exist in upgraded databases.
         }
     }
 
