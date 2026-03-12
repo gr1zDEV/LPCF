@@ -39,6 +39,10 @@ commands:
     description: Toggle receiving server broadcast messages.
     usage: "Usage: /toggleservermsg [on|off]"
     permission: ezchat.servermsg.toggle
+  toggledeathmsg:
+    description: Toggle receiving death messages.
+    usage: "Usage: /toggledeathmsg [on|off]"
+    permission: ezchat.deathmsg.toggle
   staffchat:
     description: Send a staff chat message.
     usage: "Usage: /staffchat <message>"
@@ -117,6 +121,9 @@ permissions:
 
   ezchat.servermsg.toggle:
     description: Allows use of /toggleservermsg
+    default: true
+  ezchat.deathmsg.toggle:
+    description: Allows use of /toggledeathmsg
     default: true
   ezchat.broadcast:
     description: Allows use of /ezchat broadcast as a player

@@ -9,6 +9,7 @@ webhooks:
   mute-actions: ""
   audit-actions: ""
   server-broadcasts: ""
+  death-messages: ""
 
 webhook:
   use-embeds: true
@@ -30,6 +31,7 @@ events:
   mute-actions: true
   audit-actions: true
   server-broadcasts: false
+  death-messages: false
 
 format:
   public-chat: "{player}: {message}"
@@ -40,6 +42,7 @@ format:
   audit-action: "[AUDIT] {actor}: {details}"
   server-broadcast-console: "[BROADCAST] [Console] {message}"
   server-broadcast-player: "[BROADCAST] [{sender}] {message}"
+  death-message: "[DEATH] {player}: {message}"
 
 messages:
   feature-disabled: "&cDiscord webhook support is disabled."
