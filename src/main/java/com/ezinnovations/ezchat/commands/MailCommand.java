@@ -8,6 +8,8 @@ import com.ezinnovations.ezchat.managers.MailManager;
 import com.ezinnovations.ezchat.model.MailEntry;
 import com.ezinnovations.ezchat.moderation.AdvertisingCheckService;
 import com.ezinnovations.ezchat.moderation.AdvertisingDetectionResult;
+import com.ezinnovations.ezchat.moderation.ProfanityCheckService;
+import com.ezinnovations.ezchat.moderation.ProfanityDetectionResult;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 import com.ezinnovations.ezchat.service.AuditLogService;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
@@ -47,6 +49,7 @@ public final class MailCommand implements CommandExecutor {
     private final MuteService muteService;
     private final DiscordNotificationService discordNotificationService;
     private final AdvertisingCheckService advertisingCheckService;
+    private final ProfanityCheckService profanityCheckService;
 
     public MailCommand(final EzChat plugin,
                        final FeatureManager featureManager,
@@ -58,7 +61,8 @@ public final class MailCommand implements CommandExecutor {
                        final AuditLogService auditLogService,
                        final MuteService muteService,
                        final DiscordNotificationService discordNotificationService,
-                       final AdvertisingCheckService advertisingCheckService) {
+                       final AdvertisingCheckService advertisingCheckService,
+                       final ProfanityCheckService profanityCheckService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.mailManager = mailManager;
@@ -70,6 +74,7 @@ public final class MailCommand implements CommandExecutor {
         this.muteService = muteService;
         this.discordNotificationService = discordNotificationService;
         this.advertisingCheckService = advertisingCheckService;
+        this.profanityCheckService = profanityCheckService;
     }
 
     @Override
@@ -142,6 +147,12 @@ public final class MailCommand implements CommandExecutor {
         if (advertisingCheckService.shouldScanMail() && !advertisingCheckService.shouldBypass(sender)) {
             final AdvertisingDetectionResult detectionResult = advertisingCheckService.checkAdvertising(message);
             if (advertisingCheckService.handleBlockedMessage(sender, AdvertisingCheckService.CommunicationType.MAIL, detectionResult, message)) {
+                return;
+            }
+        }
+        if (profanityCheckService.shouldScanMail() && !profanityCheckService.shouldBypass(sender)) {
+            final ProfanityDetectionResult detectionResult = profanityCheckService.checkProfanity(message);
+            if (profanityCheckService.handleBlockedMessage(sender, ProfanityCheckService.CommunicationType.MAIL, detectionResult, message)) {
                 return;
             }
         }

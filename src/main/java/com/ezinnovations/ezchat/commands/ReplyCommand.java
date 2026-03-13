@@ -7,6 +7,8 @@ import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.managers.MessageManager;
 import com.ezinnovations.ezchat.moderation.AdvertisingCheckService;
 import com.ezinnovations.ezchat.moderation.AdvertisingDetectionResult;
+import com.ezinnovations.ezchat.moderation.ProfanityCheckService;
+import com.ezinnovations.ezchat.moderation.ProfanityDetectionResult;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
 import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.service.MuteService;
@@ -31,6 +33,7 @@ public final class ReplyCommand implements CommandExecutor {
     private final MuteService muteService;
     private final DiscordNotificationService discordNotificationService;
     private final AdvertisingCheckService advertisingCheckService;
+    private final ProfanityCheckService profanityCheckService;
 
     public ReplyCommand(final EzChat plugin,
                         final FeatureManager featureManager,
@@ -40,7 +43,8 @@ public final class ReplyCommand implements CommandExecutor {
                         final CommunicationLogService communicationLogService,
                         final MuteService muteService,
                         final DiscordNotificationService discordNotificationService,
-                        final AdvertisingCheckService advertisingCheckService) {
+                        final AdvertisingCheckService advertisingCheckService,
+                        final ProfanityCheckService profanityCheckService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.messageManager = messageManager;
@@ -50,6 +54,7 @@ public final class ReplyCommand implements CommandExecutor {
         this.muteService = muteService;
         this.discordNotificationService = discordNotificationService;
         this.advertisingCheckService = advertisingCheckService;
+        this.profanityCheckService = profanityCheckService;
     }
 
     @Override
@@ -110,6 +115,12 @@ public final class ReplyCommand implements CommandExecutor {
         if (advertisingCheckService.shouldScanPrivateMessages() && !advertisingCheckService.shouldBypass(player)) {
             final AdvertisingDetectionResult detectionResult = advertisingCheckService.checkAdvertising(message);
             if (advertisingCheckService.handleBlockedMessage(player, AdvertisingCheckService.CommunicationType.MSG, detectionResult, message)) {
+                return true;
+            }
+        }
+        if (profanityCheckService.shouldScanPrivateMessages() && !profanityCheckService.shouldBypass(player)) {
+            final ProfanityDetectionResult detectionResult = profanityCheckService.checkProfanity(message);
+            if (profanityCheckService.handleBlockedMessage(player, ProfanityCheckService.CommunicationType.MSG, detectionResult, message)) {
                 return true;
             }
         }

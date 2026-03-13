@@ -6,6 +6,7 @@ import com.ezinnovations.ezchat.config.DeathMessageConfig;
 import com.ezinnovations.ezchat.config.DiscordConfig;
 import com.ezinnovations.ezchat.config.LogsConfig;
 import com.ezinnovations.ezchat.config.MuteConfig;
+import com.ezinnovations.ezchat.config.ProfanityConfig;
 import com.ezinnovations.ezchat.config.StaffConfig;
 import com.ezinnovations.ezchat.config.ServerMessageConfig;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -27,6 +28,7 @@ public final class ConfigManager {
     private final MuteConfig muteConfig;
     private final DiscordConfig discordConfig;
     private final AntiSpamConfig antiSpamConfig;
+    private final ProfanityConfig profanityConfig;
     private final StaffConfig staffConfig;
     private final ServerMessageConfig serverMessageConfig;
     private final DeathMessageConfig deathMessageConfig;
@@ -37,6 +39,7 @@ public final class ConfigManager {
         this.muteConfig = new MuteConfig(plugin);
         this.discordConfig = new DiscordConfig(plugin);
         this.antiSpamConfig = new AntiSpamConfig(plugin);
+        this.profanityConfig = new ProfanityConfig(plugin);
         this.staffConfig = new StaffConfig(plugin);
         this.serverMessageConfig = new ServerMessageConfig(plugin);
         this.deathMessageConfig = new DeathMessageConfig(plugin);
@@ -63,6 +66,7 @@ public final class ConfigManager {
         muteConfig.reload();
         discordConfig.reload();
         antiSpamConfig.reload();
+        profanityConfig.reload();
         staffConfig.reload();
         serverMessageConfig.reload();
         deathMessageConfig.reload();
@@ -90,6 +94,10 @@ public final class ConfigManager {
 
     public AntiSpamConfig getAntiSpamConfig() {
         return antiSpamConfig;
+    }
+
+    public ProfanityConfig getProfanityConfig() {
+        return profanityConfig;
     }
 
     public StaffConfig getStaffConfig() {
