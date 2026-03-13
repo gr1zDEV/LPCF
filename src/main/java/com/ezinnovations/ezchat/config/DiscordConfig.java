@@ -49,6 +49,8 @@ public final class DiscordConfig {
             case AUDIT_ACTIONS -> "webhooks.audit-actions";
             case SERVER_BROADCASTS -> "webhooks.server-broadcasts";
             case DEATH_MESSAGES -> "webhooks.death-messages";
+            case JOIN_MESSAGES -> "webhooks.join-messages";
+            case LEAVE_MESSAGES -> "webhooks.leave-messages";
         };
         return trim(config.getString(path, ""));
     }
@@ -62,6 +64,8 @@ public final class DiscordConfig {
             case AUDIT_ACTIONS -> "events.audit-actions";
             case SERVER_BROADCASTS -> "events.server-broadcasts";
             case DEATH_MESSAGES -> "events.death-messages";
+            case JOIN_MESSAGES -> "events.join-messages";
+            case LEAVE_MESSAGES -> "events.leave-messages";
         };
         return config.getBoolean(path, false);
     }

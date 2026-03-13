@@ -1,0 +1,33 @@
+features:
+  enabled: true
+
+settings:
+  log-join-leave-messages: true
+  default-enabled: true
+  use-vanilla-join-message: true
+  use-vanilla-leave-message: true
+
+formats:
+  join-message: "&8[&aJoin&8] &f{message}"
+  leave-message: "&8[&cLeave&8] &f{message}"
+
+sounds:
+  join:
+    enabled: true
+    sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+    volume: 1.0
+    pitch: 1.0
+  leave:
+    enabled: false
+    sound: "BLOCK_NOTE_BLOCK_BASS"
+    volume: 1.0
+    pitch: 1.0
+
+messages:
+  no-permission: "&cYou do not have permission."
+  feature-disabled: "&cThat feature is currently disabled."
+  toggle-enabled: "&aYou can now receive join/leave messages."
+  toggle-disabled: "&cYou will no longer receive join/leave messages."
+  toggle-already-enabled: "&eJoin/leave messages are already enabled."
+  toggle-already-disabled: "&eJoin/leave messages are already disabled."
+  toggle-invalid-usage: "&cUsage: /togglejoinleavemsg [on|off]"

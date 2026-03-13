@@ -43,6 +43,10 @@ commands:
     description: Toggle receiving death messages.
     usage: "Usage: /toggledeathmsg [on|off]"
     permission: ezchat.deathmsg.toggle
+  togglejoinleavemsg:
+    description: Toggle receiving join/leave messages.
+    usage: "Usage: /togglejoinleavemsg [on|off]"
+    permission: ezchat.joinleavemsg.toggle
   staffchat:
     description: Send a staff chat message.
     usage: "Usage: /staffchat <message>"
@@ -128,6 +132,9 @@ permissions:
     default: true
   ezchat.deathmsg.toggle:
     description: Allows use of /toggledeathmsg
+    default: true
+  ezchat.joinleavemsg.toggle:
+    description: Allows use of /togglejoinleavemsg
     default: true
   ezchat.broadcast:
     description: Allows use of /ezchat broadcast as a player

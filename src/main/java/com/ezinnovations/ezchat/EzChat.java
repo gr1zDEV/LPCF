@@ -10,6 +10,7 @@ import com.ezinnovations.ezchat.commands.MailCommand;
 import com.ezinnovations.ezchat.commands.MessageCommand;
 import com.ezinnovations.ezchat.commands.ReplyCommand;
 import com.ezinnovations.ezchat.commands.ToggleMailCommand;
+import com.ezinnovations.ezchat.commands.ToggleJoinLeaveMessageCommand;
 import com.ezinnovations.ezchat.commands.ToggleMsgCommand;
 import com.ezinnovations.ezchat.commands.StaffChatCommand;
 import com.ezinnovations.ezchat.commands.ToggleStaffChatCommand;
@@ -30,6 +31,7 @@ import com.ezinnovations.ezchat.discord.DiscordWebhookRouter;
 import com.ezinnovations.ezchat.discord.DiscordWebhookService;
 import com.ezinnovations.ezchat.listeners.PaperChatListener;
 import com.ezinnovations.ezchat.listeners.PlayerJoinListener;
+import com.ezinnovations.ezchat.listeners.JoinLeaveMessageListener;
 import com.ezinnovations.ezchat.listeners.DeathMessageListener;
 import com.ezinnovations.ezchat.moderation.AdvertisingCheckService;
 import com.ezinnovations.ezchat.moderation.ProfanityCheckService;
@@ -47,6 +49,7 @@ import com.ezinnovations.ezchat.service.StaffAlertService;
 import com.ezinnovations.ezchat.service.StaffChatService;
 import com.ezinnovations.ezchat.service.ServerMessageService;
 import com.ezinnovations.ezchat.service.DeathMessageService;
+import com.ezinnovations.ezchat.service.JoinLeaveService;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
 import me.clip.placeholderapi.PlaceholderAPI;
 import net.luckperms.api.LuckPerms;
@@ -104,6 +107,7 @@ public final class EzChat extends JavaPlugin {
         saveResource("staff.yml", false);
         saveResource("server-message.yml", false);
         saveResource("death-message.yml", false);
+        saveResource("join-leave.yml", false);
         this.configManager = new ConfigManager(this);
         this.configManager.reload();
         this.featureManager = new FeatureManager(this);
@@ -139,6 +143,7 @@ public final class EzChat extends JavaPlugin {
         final ServerMessageService serverMessageService = new ServerMessageService(this, configManager.getServerMessageConfig(), this.chatToggleManager, communicationLogService, auditLogService, discordNotificationService);
         this.broadcastSubcommand = new BroadcastSubcommand(this, configManager.getServerMessageConfig(), serverMessageService);
         final DeathMessageService deathMessageService = new DeathMessageService(this, configManager.getDeathMessageConfig(), this.chatToggleManager, communicationLogService, discordNotificationService);
+        final JoinLeaveService joinLeaveService = new JoinLeaveService(this, configManager.getJoinLeaveConfig(), this.chatToggleManager, communicationLogService, discordNotificationService);
         this.messageManager = new MessageManager();
         this.ignoreManager = new IgnoreManager(this, ignoreRepository);
         this.ignoreManager.load();
@@ -152,6 +157,7 @@ public final class EzChat extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.featureManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, this.staffChatService), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this, this.featureManager, this.mailManager), this);
         getServer().getPluginManager().registerEvents(new DeathMessageListener(deathMessageService), this);
+        getServer().getPluginManager().registerEvents(new JoinLeaveMessageListener(joinLeaveService), this);
 
         if (getCommand("togglechat") != null) {
             getCommand("togglechat").setExecutor(new ChatToggleCommand(this, this.featureManager, this.chatToggleManager, auditLogService, discordNotificationService));
@@ -205,6 +211,12 @@ public final class EzChat extends JavaPlugin {
             getCommand("toggledeathmsg").setExecutor(new ToggleDeathMessageCommand(this, this.configManager.getDeathMessageConfig(), deathMessageService));
         } else {
             getLogger().warning("[EzChat] Failed to register /toggledeathmsg command.");
+        }
+
+        if (getCommand("togglejoinleavemsg") != null) {
+            getCommand("togglejoinleavemsg").setExecutor(new ToggleJoinLeaveMessageCommand(this, this.configManager.getJoinLeaveConfig(), joinLeaveService));
+        } else {
+            getLogger().warning("[EzChat] Failed to register /togglejoinleavemsg command.");
         }
 
         if (getCommand("staffchat") != null) {
