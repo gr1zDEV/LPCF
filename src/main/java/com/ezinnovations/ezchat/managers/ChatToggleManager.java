@@ -20,6 +20,7 @@ public final class ChatToggleManager {
     private final Set<UUID> serverMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> staffChatModeEnabledPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> deathMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> joinLeaveMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
 
     public ChatToggleManager(final EzChat plugin, final ToggleRepository toggleRepository) {
         this.plugin = plugin;
@@ -34,6 +35,7 @@ public final class ChatToggleManager {
         serverMessagesDisabledPlayers.clear();
         staffChatModeEnabledPlayers.clear();
         deathMessagesDisabledPlayers.clear();
+        joinLeaveMessagesDisabledPlayers.clear();
 
         try {
             final Map<UUID, ToggleRepository.ToggleState> toggles = toggleRepository.loadAll();
@@ -58,6 +60,9 @@ public final class ChatToggleManager {
                 }
                 if (!state.deathMessagesEnabled()) {
                     deathMessagesDisabledPlayers.add(uuid);
+                }
+                if (!state.joinLeaveMessagesEnabled()) {
+                    joinLeaveMessagesDisabledPlayers.add(uuid);
                 }
             }
         } catch (final SQLException exception) {
@@ -263,11 +268,46 @@ public final class ChatToggleManager {
         return nowDisabled;
     }
 
+
+
+    public boolean areJoinLeaveMessagesDisabled(final UUID uuid) {
+        return joinLeaveMessagesDisabledPlayers.contains(uuid);
+    }
+
+    public boolean setJoinLeaveMessagesDisabled(final UUID uuid, final boolean disabled) {
+        final boolean changed;
+        if (disabled) {
+            changed = joinLeaveMessagesDisabledPlayers.add(uuid);
+        } else {
+            changed = joinLeaveMessagesDisabledPlayers.remove(uuid);
+        }
+
+        if (changed) {
+            persist(uuid);
+        }
+
+        return changed;
+    }
+
+    public boolean toggleJoinLeaveMessages(final UUID uuid) {
+        final boolean nowDisabled;
+        if (joinLeaveMessagesDisabledPlayers.contains(uuid)) {
+            joinLeaveMessagesDisabledPlayers.remove(uuid);
+            nowDisabled = false;
+        } else {
+            joinLeaveMessagesDisabledPlayers.add(uuid);
+            nowDisabled = true;
+        }
+        persist(uuid);
+        return nowDisabled;
+    }
+
     public void save() {
         // Persistence is immediate.
     }
 
     private void persist(final UUID uuid) {
+        knownTogglePlayers.add(uuid);
         try {
             toggleRepository.upsert(
                     uuid,
@@ -276,7 +316,8 @@ public final class ChatToggleManager {
                     !mailDisabledPlayers.contains(uuid),
                     !serverMessagesDisabledPlayers.contains(uuid),
                     staffChatModeEnabledPlayers.contains(uuid),
-                    !deathMessagesDisabledPlayers.contains(uuid)
+                    !deathMessagesDisabledPlayers.contains(uuid),
+                    !joinLeaveMessagesDisabledPlayers.contains(uuid)
             );
         } catch (final SQLException exception) {
             plugin.getLogger().warning("Failed to persist toggle for " + uuid + ": " + exception.getMessage());

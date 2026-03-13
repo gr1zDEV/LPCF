@@ -10,6 +10,8 @@ webhooks:
   audit-actions: ""
   server-broadcasts: ""
   death-messages: ""
+  join-messages: ""
+  leave-messages: ""
 
 webhook:
   use-embeds: true
@@ -32,6 +34,8 @@ events:
   audit-actions: true
   server-broadcasts: false
   death-messages: false
+  join-messages: false
+  leave-messages: false
 
 format:
   public-chat: "{player}: {message}"
@@ -43,6 +47,8 @@ format:
   server-broadcast-console: "[BROADCAST] [Console] {message}"
   server-broadcast-player: "[BROADCAST] [{sender}] {message}"
   death-message: "[DEATH] {player}: {message}"
+  join-message: "[JOIN] {player}: {message}"
+  leave-message: "[LEAVE] {player}: {message}"
 
 messages:
   feature-disabled: "&cDiscord webhook support is disabled."

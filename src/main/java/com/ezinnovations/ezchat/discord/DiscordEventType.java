@@ -7,5 +7,7 @@ public enum DiscordEventType {
     MUTE_ACTIONS,
     AUDIT_ACTIONS,
     SERVER_BROADCASTS,
-    DEATH_MESSAGES
+    DEATH_MESSAGES,
+    JOIN_MESSAGES,
+    LEAVE_MESSAGES
 }

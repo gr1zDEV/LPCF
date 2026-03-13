@@ -132,6 +132,39 @@ public final class DiscordNotificationService {
         );
     }
 
+
+    public void sendJoinMessage(final UUID playerUuid,
+                                final String playerName,
+                                final String message) {
+        webhookService.send(
+                DiscordEventType.JOIN_MESSAGES,
+                playerUuid,
+                playerName,
+                "join-message",
+                "[JOIN] {player}: {message}",
+                Map.of(
+                        "player", playerName,
+                        "message", message
+                )
+        );
+    }
+
+    public void sendLeaveMessage(final UUID playerUuid,
+                                 final String playerName,
+                                 final String message) {
+        webhookService.send(
+                DiscordEventType.LEAVE_MESSAGES,
+                playerUuid,
+                playerName,
+                "leave-message",
+                "[LEAVE] {player}: {message}",
+                Map.of(
+                        "player", playerName,
+                        "message", message
+                )
+        );
+    }
+
     public void sendAuditAction(final UUID actorUuid,
                                 final String actorName,
                                 final String details) {

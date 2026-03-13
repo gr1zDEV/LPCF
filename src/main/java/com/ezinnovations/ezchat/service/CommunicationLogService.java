@@ -60,6 +60,21 @@ public final class CommunicationLogService {
         insert("DEATH", senderUuid, senderName, null, null, message);
     }
 
+    public void logJoin(final UUID senderUuid, final String senderName, final String message) {
+        if (!logsConfig.isLoggingEnabled()) {
+            return;
+        }
+        insert("JOIN", senderUuid, senderName, null, null, message);
+    }
+
+    public void logLeave(final UUID senderUuid, final String senderName, final String message) {
+        if (!logsConfig.isLoggingEnabled()) {
+            return;
+        }
+        insert("LEAVE", senderUuid, senderName, null, null, message);
+    }
+
+
     public void logStaffChat(final UUID senderUuid, final String senderName, final String message) {
         if (!logsConfig.isLoggingEnabled()) {
             return;

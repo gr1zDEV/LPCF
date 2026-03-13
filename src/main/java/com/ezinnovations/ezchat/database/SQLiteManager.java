@@ -48,12 +48,14 @@ public final class SQLiteManager implements DatabaseManager {
                         server_messages_enabled INTEGER NOT NULL DEFAULT 1,
                         staff_chat_mode_enabled INTEGER NOT NULL DEFAULT 0,
                         death_messages_enabled INTEGER NOT NULL DEFAULT 1,
+                        join_leave_messages_enabled INTEGER NOT NULL DEFAULT 1,
                         FOREIGN KEY(player_uuid) REFERENCES players(uuid)
                     )
                     """);
             ensureColumn(statement, "ALTER TABLE toggles ADD COLUMN server_messages_enabled INTEGER NOT NULL DEFAULT 1");
             ensureColumn(statement, "ALTER TABLE toggles ADD COLUMN staff_chat_mode_enabled INTEGER NOT NULL DEFAULT 0");
             ensureColumn(statement, "ALTER TABLE toggles ADD COLUMN death_messages_enabled INTEGER NOT NULL DEFAULT 1");
+            ensureColumn(statement, "ALTER TABLE toggles ADD COLUMN join_leave_messages_enabled INTEGER NOT NULL DEFAULT 1");
             statement.execute("""
                     CREATE TABLE IF NOT EXISTS ignores (
                         owner_uuid TEXT NOT NULL,

@@ -46,6 +46,8 @@ public final class DiscordMessageBuilder {
             case AUDIT_ACTIONS -> "Audit Action";
             case SERVER_BROADCASTS -> "Server Broadcast";
             case DEATH_MESSAGES -> "Death Message";
+            case JOIN_MESSAGES -> "Join Message";
+            case LEAVE_MESSAGES -> "Leave Message";
             default -> "Notification";
         };
 

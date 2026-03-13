@@ -5,6 +5,7 @@ import com.ezinnovations.ezchat.config.AntiSpamConfig;
 import com.ezinnovations.ezchat.config.DeathMessageConfig;
 import com.ezinnovations.ezchat.config.DiscordConfig;
 import com.ezinnovations.ezchat.config.LogsConfig;
+import com.ezinnovations.ezchat.config.JoinLeaveConfig;
 import com.ezinnovations.ezchat.config.MuteConfig;
 import com.ezinnovations.ezchat.config.ProfanityConfig;
 import com.ezinnovations.ezchat.config.StaffConfig;
@@ -32,6 +33,7 @@ public final class ConfigManager {
     private final StaffConfig staffConfig;
     private final ServerMessageConfig serverMessageConfig;
     private final DeathMessageConfig deathMessageConfig;
+    private final JoinLeaveConfig joinLeaveConfig;
 
     public ConfigManager(final EzChat plugin) {
         this.plugin = plugin;
@@ -43,6 +45,7 @@ public final class ConfigManager {
         this.staffConfig = new StaffConfig(plugin);
         this.serverMessageConfig = new ServerMessageConfig(plugin);
         this.deathMessageConfig = new DeathMessageConfig(plugin);
+        this.joinLeaveConfig = new JoinLeaveConfig(plugin);
     }
 
     public void reload() {
@@ -70,6 +73,7 @@ public final class ConfigManager {
         staffConfig.reload();
         serverMessageConfig.reload();
         deathMessageConfig.reload();
+        joinLeaveConfig.reload();
     }
 
     public FileConfiguration getPrivateMessageConfig() {
@@ -110,5 +114,9 @@ public final class ConfigManager {
 
     public DeathMessageConfig getDeathMessageConfig() {
         return deathMessageConfig;
+    }
+
+    public JoinLeaveConfig getJoinLeaveConfig() {
+        return joinLeaveConfig;
     }
 }
