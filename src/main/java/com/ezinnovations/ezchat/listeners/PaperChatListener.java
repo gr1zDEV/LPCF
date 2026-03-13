@@ -4,6 +4,8 @@ import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.moderation.AdvertisingCheckService;
 import com.ezinnovations.ezchat.moderation.AdvertisingDetectionResult;
+import com.ezinnovations.ezchat.moderation.ProfanityCheckService;
+import com.ezinnovations.ezchat.moderation.ProfanityDetectionResult;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
@@ -35,6 +37,7 @@ public final class PaperChatListener implements Listener {
     private final MuteService muteService;
     private final DiscordNotificationService discordNotificationService;
     private final AdvertisingCheckService advertisingCheckService;
+    private final ProfanityCheckService profanityCheckService;
     private final StaffChatService staffChatService;
 
     public PaperChatListener(final EzChat plugin,
@@ -46,6 +49,7 @@ public final class PaperChatListener implements Listener {
                              final MuteService muteService,
                              final DiscordNotificationService discordNotificationService,
                              final AdvertisingCheckService advertisingCheckService,
+                             final ProfanityCheckService profanityCheckService,
                              final StaffChatService staffChatService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
@@ -56,6 +60,7 @@ public final class PaperChatListener implements Listener {
         this.muteService = muteService;
         this.discordNotificationService = discordNotificationService;
         this.advertisingCheckService = advertisingCheckService;
+        this.profanityCheckService = profanityCheckService;
         this.staffChatService = staffChatService;
     }
 
@@ -73,8 +78,9 @@ public final class PaperChatListener implements Listener {
 
         final Player player = event.getPlayer();
 
+        final String rawMessage = LegacyComponentSerializer.legacySection().serialize(event.message());
+
         if (advertisingCheckService.shouldScanPublicChat() && !advertisingCheckService.shouldBypass(player)) {
-            final String rawMessage = LegacyComponentSerializer.legacySection().serialize(event.message());
             final AdvertisingDetectionResult detectionResult = advertisingCheckService.checkAdvertising(rawMessage);
             if (advertisingCheckService.handleBlockedMessage(player, AdvertisingCheckService.CommunicationType.PUBLIC, detectionResult, rawMessage)) {
                 event.setCancelled(true);
@@ -82,9 +88,25 @@ public final class PaperChatListener implements Listener {
             }
         }
 
+        if (profanityCheckService.shouldScanPublicChat() && !profanityCheckService.shouldBypass(player)) {
+            final ProfanityDetectionResult detectionResult = profanityCheckService.checkProfanity(rawMessage);
+            if (profanityCheckService.handleBlockedMessage(player, ProfanityCheckService.CommunicationType.PUBLIC, detectionResult, rawMessage)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
+
         if (staffChatService.isFeatureEnabled() && staffChatService.isStaffChatModeEnabled(player.getUniqueId()) && player.hasPermission("ezchat.staffchat")) {
+            final String message = plugin.processMessage(player, rawMessage);
+            if (profanityCheckService.shouldScanStaffChat() && !profanityCheckService.shouldBypass(player)) {
+                final ProfanityDetectionResult detectionResult = profanityCheckService.checkProfanity(message);
+                if (profanityCheckService.handleBlockedMessage(player, ProfanityCheckService.CommunicationType.STAFF, detectionResult, message)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
             event.setCancelled(true);
-            final String message = plugin.processMessage(player, LegacyComponentSerializer.legacySection().serialize(event.message()));
             staffChatService.sendStaffChat(player, message);
             return;
         }

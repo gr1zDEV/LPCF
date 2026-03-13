@@ -1,0 +1,34 @@
+features:
+  enabled: true
+
+checks:
+  public-chat: true
+  private-messages: true
+  mail: true
+  staff-chat: false
+
+actions:
+  block-message: true
+  notify-sender: true
+  audit-log: true
+  discord-log: false
+  include-blocked-content-in-audit: true
+
+permissions:
+  bypass: "ezchat.bypass.profanity"
+
+messages:
+  blocked: "&cThat message contains blocked language."
+  feature-disabled: "&cThat feature is currently disabled."
+
+word-list:
+  enabled: true
+  blocked:
+    - "exampleword1"
+    - "exampleword2"
+
+regex:
+  enabled: true
+  patterns:
+    - "(?i)bad\\s*word"
+    - "(?i)another[-_ ]?phrase"

@@ -2,6 +2,8 @@ package com.ezinnovations.ezchat.commands;
 
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.config.StaffConfig;
+import com.ezinnovations.ezchat.moderation.ProfanityCheckService;
+import com.ezinnovations.ezchat.moderation.ProfanityDetectionResult;
 import com.ezinnovations.ezchat.service.StaffChatService;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,11 +15,13 @@ public final class StaffChatCommand implements CommandExecutor {
     private final EzChat plugin;
     private final StaffConfig staffConfig;
     private final StaffChatService staffChatService;
+    private final ProfanityCheckService profanityCheckService;
 
-    public StaffChatCommand(final EzChat plugin, final StaffConfig staffConfig, final StaffChatService staffChatService) {
+    public StaffChatCommand(final EzChat plugin, final StaffConfig staffConfig, final StaffChatService staffChatService, final ProfanityCheckService profanityCheckService) {
         this.plugin = plugin;
         this.staffConfig = staffConfig;
         this.staffChatService = staffChatService;
+        this.profanityCheckService = profanityCheckService;
     }
 
     @Override
@@ -42,7 +46,17 @@ public final class StaffChatCommand implements CommandExecutor {
             return true;
         }
 
-        staffChatService.sendStaffChat(sender, String.join(" ", args));
+        final Player player = (Player) sender;
+        final String message = String.join(" ", args);
+
+        if (profanityCheckService.shouldScanStaffChat() && !profanityCheckService.shouldBypass(player)) {
+            final ProfanityDetectionResult detectionResult = profanityCheckService.checkProfanity(message);
+            if (profanityCheckService.handleBlockedMessage(player, ProfanityCheckService.CommunicationType.STAFF, detectionResult, message)) {
+                return true;
+            }
+        }
+
+        staffChatService.sendStaffChat(sender, message);
         return true;
     }
 }
