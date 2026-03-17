@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public final class MailRepository {
@@ -55,6 +56,31 @@ public final class MailRepository {
         return findBy("sender_uuid", playerUuid);
     }
 
+    public Optional<MailEntry> findInboxById(final UUID playerUuid, final String id) throws SQLException {
+        final String sql = "SELECT id, sender_uuid, receiver_uuid, sender_name, receiver_name, message, timestamp, read FROM mail WHERE receiver_uuid = ? AND id = ?";
+        try (Connection connection = databaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, playerUuid.toString());
+            statement.setString(2, id);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    return Optional.empty();
+                }
+                return Optional.of(readEntry(resultSet));
+            }
+        }
+    }
+
+    public int deleteInboxById(final UUID playerUuid, final String id) throws SQLException {
+        final String sql = "DELETE FROM mail WHERE receiver_uuid = ? AND id = ?";
+        try (Connection connection = databaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, playerUuid.toString());
+            statement.setString(2, id);
+            return statement.executeUpdate();
+        }
+    }
+
     public int getUnreadCount(final UUID playerUuid) throws SQLException {
         final String sql = "SELECT COUNT(*) FROM mail WHERE receiver_uuid = ? AND read = 0";
         try (Connection connection = databaseManager.getConnection();
@@ -86,6 +112,16 @@ public final class MailRepository {
         }
     }
 
+    public void markAsRead(final UUID playerUuid, final String id) throws SQLException {
+        final String sql = "UPDATE mail SET read = 1 WHERE receiver_uuid = ? AND id = ?";
+        try (Connection connection = databaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, playerUuid.toString());
+            statement.setString(2, id);
+            statement.executeUpdate();
+        }
+    }
+
     public boolean isEmpty() throws SQLException {
         final String sql = "SELECT COUNT(*) FROM mail";
         try (Connection connection = databaseManager.getConnection();
@@ -104,20 +140,24 @@ public final class MailRepository {
             statement.setString(1, playerUuid.toString());
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    entries.add(new MailEntry(
-                            resultSet.getString("id"),
-                            UUID.fromString(resultSet.getString("sender_uuid")),
-                            resultSet.getString("sender_name"),
-                            UUID.fromString(resultSet.getString("receiver_uuid")),
-                            resultSet.getString("receiver_name"),
-                            resultSet.getString("message"),
-                            resultSet.getLong("timestamp"),
-                            resultSet.getInt("read") == 1
-                    ));
+                    entries.add(readEntry(resultSet));
                 }
             }
         }
 
         return entries;
+    }
+
+    private MailEntry readEntry(final ResultSet resultSet) throws SQLException {
+        return new MailEntry(
+                resultSet.getString("id"),
+                UUID.fromString(resultSet.getString("sender_uuid")),
+                resultSet.getString("sender_name"),
+                UUID.fromString(resultSet.getString("receiver_uuid")),
+                resultSet.getString("receiver_name"),
+                resultSet.getString("message"),
+                resultSet.getLong("timestamp"),
+                resultSet.getInt("read") == 1
+        );
     }
 }

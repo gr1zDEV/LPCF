@@ -78,3 +78,7 @@ ignore:
   cannot-ignore-self: "&cYou cannot ignore yourself."
   sender-ignored: "&cThat player is ignoring you."
   no-permission: "&cYou do not have permission."
+  ignorelist-empty: "&7You are not ignoring anyone."
+  unignore-success: "&aYou are no longer ignoring {player} for {type}."
+  unignore-not-found: "&cNo matching ignore entry found."
+  unignore-invalid-usage: "&cUsage: /unignore <player> <ALL|CHAT|MSG|MAIL|ALL_TYPES>"

@@ -12,6 +12,7 @@ import com.ezinnovations.ezchat.moderation.ProfanityDetectionResult;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
 import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.service.MuteService;
+import com.ezinnovations.ezchat.service.SpyService;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -34,6 +35,7 @@ public final class ReplyCommand implements CommandExecutor {
     private final DiscordNotificationService discordNotificationService;
     private final AdvertisingCheckService advertisingCheckService;
     private final ProfanityCheckService profanityCheckService;
+    private final SpyService spyService;
 
     public ReplyCommand(final EzChat plugin,
                         final FeatureManager featureManager,
@@ -55,6 +57,7 @@ public final class ReplyCommand implements CommandExecutor {
         this.discordNotificationService = discordNotificationService;
         this.advertisingCheckService = advertisingCheckService;
         this.profanityCheckService = profanityCheckService;
+        this.spyService = spyService;
     }
 
     @Override
@@ -140,6 +143,7 @@ public final class ReplyCommand implements CommandExecutor {
         messageManager.updateConversation(player, receiver);
         communicationLogService.logPrivateMessage(player.getUniqueId(), player.getName(), receiver.getUniqueId(), receiver.getName(), message);
         discordNotificationService.sendPrivateMessage(player.getUniqueId(), player.getName(), receiver.getUniqueId(), receiver.getName(), message);
+        spyService.dispatchPrivateMessageSpy(player, receiver, message);
         return true;
     }
 }
