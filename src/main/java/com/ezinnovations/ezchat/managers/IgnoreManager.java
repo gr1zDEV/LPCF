@@ -4,6 +4,10 @@ import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.database.repository.IgnoreRepository;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +19,9 @@ public final class IgnoreManager {
         CHAT,
         MSG,
         MAIL
+    }
+
+    public record IgnoreEntry(UUID targetUuid, IgnoreType ignoreType) {
     }
 
     private final EzChat plugin;
@@ -66,6 +73,53 @@ public final class IgnoreManager {
 
         viewerIgnores.put(target, type);
         persistSet(viewer, target, type);
+        return true;
+    }
+
+    public List<IgnoreEntry> getIgnoreEntries(final UUID viewer) {
+        final Map<UUID, IgnoreType> viewerIgnores = ignoresByViewer.get(viewer);
+        if (viewerIgnores == null || viewerIgnores.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final List<IgnoreEntry> entries = new ArrayList<>();
+        for (final Map.Entry<UUID, IgnoreType> entry : viewerIgnores.entrySet()) {
+            entries.add(new IgnoreEntry(entry.getKey(), entry.getValue()));
+        }
+        entries.sort(Comparator.comparing(entry -> entry.targetUuid().toString()));
+        return entries;
+    }
+
+    public boolean unignore(final UUID viewer, final UUID target, final IgnoreType type) {
+        final Map<UUID, IgnoreType> viewerIgnores = ignoresByViewer.get(viewer);
+        if (viewerIgnores == null) {
+            return false;
+        }
+
+        final IgnoreType current = viewerIgnores.get(target);
+        if (current == null) {
+            return false;
+        }
+
+        if (current != type && current != IgnoreType.ALL) {
+            return false;
+        }
+
+        viewerIgnores.remove(target);
+        cleanupViewerIfEmpty(viewer, viewerIgnores);
+        persistRemoval(viewer, target);
+        return true;
+    }
+
+    public boolean unignoreAllTypes(final UUID viewer, final UUID target) {
+        final Map<UUID, IgnoreType> viewerIgnores = ignoresByViewer.get(viewer);
+        if (viewerIgnores == null || !viewerIgnores.containsKey(target)) {
+            return false;
+        }
+
+        viewerIgnores.remove(target);
+        cleanupViewerIfEmpty(viewer, viewerIgnores);
+        persistRemoval(viewer, target);
         return true;
     }
 

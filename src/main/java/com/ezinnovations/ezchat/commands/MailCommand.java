@@ -10,13 +10,13 @@ import com.ezinnovations.ezchat.moderation.AdvertisingCheckService;
 import com.ezinnovations.ezchat.moderation.AdvertisingDetectionResult;
 import com.ezinnovations.ezchat.moderation.ProfanityCheckService;
 import com.ezinnovations.ezchat.moderation.ProfanityDetectionResult;
-import com.ezinnovations.ezchat.utils.FloodgateHook;
 import com.ezinnovations.ezchat.service.AuditLogService;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
 import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.service.MuteService;
+import com.ezinnovations.ezchat.service.SpyService;
+import com.ezinnovations.ezchat.utils.FloodgateHook;
 import com.ezinnovations.ezchat.utils.TimeFormatUtil;
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -50,6 +51,7 @@ public final class MailCommand implements CommandExecutor {
     private final DiscordNotificationService discordNotificationService;
     private final AdvertisingCheckService advertisingCheckService;
     private final ProfanityCheckService profanityCheckService;
+    private final SpyService spyService;
 
     public MailCommand(final EzChat plugin,
                        final FeatureManager featureManager,
@@ -62,7 +64,8 @@ public final class MailCommand implements CommandExecutor {
                        final MuteService muteService,
                        final DiscordNotificationService discordNotificationService,
                        final AdvertisingCheckService advertisingCheckService,
-                       final ProfanityCheckService profanityCheckService) {
+                       final ProfanityCheckService profanityCheckService,
+                       final SpyService spyService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.mailManager = mailManager;
@@ -75,6 +78,7 @@ public final class MailCommand implements CommandExecutor {
         this.discordNotificationService = discordNotificationService;
         this.advertisingCheckService = advertisingCheckService;
         this.profanityCheckService = profanityCheckService;
+        this.spyService = spyService;
     }
 
     @Override
@@ -101,10 +105,12 @@ public final class MailCommand implements CommandExecutor {
 
         final String sub = args[0].toLowerCase(Locale.ROOT);
         switch (sub) {
-            case "inbox" -> { handleInbox(player, args); auditLogService.log(player, "MAIL_INBOX_VIEW", "viewed inbox"); discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "viewed inbox"); }
-            case "unread" -> { handleUnread(player, args); auditLogService.log(player, "MAIL_UNREAD_VIEW", "viewed unread mail"); discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "viewed unread mail"); }
-            case "sent" -> { handleSent(player, args); auditLogService.log(player, "MAIL_SENT_VIEW", "viewed sent mail"); discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "viewed sent mail"); }
-            case "received" -> { handleReceived(player, args); auditLogService.log(player, "MAIL_RECEIVED_VIEW", "viewed received mail"); discordNotificationService.sendAuditAction(player.getUniqueId(), player.getName(), "viewed received mail"); }
+            case "inbox" -> handleInbox(player, args);
+            case "unread" -> handleUnread(player, args);
+            case "sent" -> handleSent(player, args);
+            case "received" -> handleReceived(player, args);
+            case "read" -> handleRead(player, args);
+            case "delete" -> handleDelete(player, args);
             default -> handleSend(player, args);
         }
         return true;
@@ -137,8 +143,7 @@ public final class MailCommand implements CommandExecutor {
             return;
         }
 
-        if (featureManager.isIgnoreEnabled()
-                && ignoreManager.isIgnoring(target.getUniqueId(), sender.getUniqueId(), IgnoreManager.IgnoreType.MAIL)) {
+        if (featureManager.isIgnoreEnabled() && ignoreManager.isIgnoring(target.getUniqueId(), sender.getUniqueId(), IgnoreManager.IgnoreType.MAIL)) {
             sender.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.target-ignoring-mail", "&cThat player is ignoring your mail.")));
             return;
         }
@@ -150,36 +155,32 @@ public final class MailCommand implements CommandExecutor {
                 return;
             }
         }
+
         if (profanityCheckService.shouldScanMail() && !profanityCheckService.shouldBypass(sender)) {
             final ProfanityDetectionResult detectionResult = profanityCheckService.checkProfanity(message);
             if (profanityCheckService.handleBlockedMessage(sender, ProfanityCheckService.CommunicationType.MAIL, detectionResult, message)) {
                 return;
             }
         }
+
         final String receiverName = target.getName() != null ? target.getName() : args[0];
-
-        mailManager.sendMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
-        communicationLogService.logMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
-        discordNotificationService.sendMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
-
+        final MailEntry entry = mailManager.sendMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
         sender.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.sent-confirmation", "&aMail sent to {player}.")
                 .replace("{player}", receiverName)));
 
-        auditLogService.log(sender, "MAIL_SEND", "sent mail to " + receiverName);
-        discordNotificationService.sendAuditAction(sender.getUniqueId(), sender.getName(), "sent mail to " + receiverName);
-
-        if (target.isOnline() && target.getPlayer() != null) {
-            target.getPlayer().sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.received-notify", "&eYou received new mail from {player}. Use /mail inbox")
+        final Player onlineTarget = plugin.getServer().getPlayer(target.getUniqueId());
+        if (onlineTarget != null) {
+            onlineTarget.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.received-notify", "&eYou received new mail from {player}. Use /mail inbox")
                     .replace("{player}", sender.getName())));
         }
+
+        communicationLogService.logMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
+        auditLogService.log(sender, "MAIL_SEND", "sent mail to " + receiverName + " (id=" + entry.getId() + ")");
+        discordNotificationService.sendMail(sender.getUniqueId(), sender.getName(), target.getUniqueId(), receiverName, message);
+        spyService.dispatchMailSpy(sender, receiverName, message);
     }
 
     private void handleInbox(final Player player, final String[] args) {
-        if (!player.hasPermission("ezchat.mail.inbox")) {
-            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.no-permission", "&cYou do not have permission.")));
-            return;
-        }
-
         final int page = readPage(args, 1);
         final List<MailEntry> inbox = mailManager.getInbox(player.getUniqueId());
         if (inbox.isEmpty()) {
@@ -187,15 +188,11 @@ public final class MailCommand implements CommandExecutor {
             return;
         }
 
-        sendMailPage(player, "&6&lMail Inbox", inbox, page, true, true);
+        sendMailPage(player, "&6&lInbox", inbox, page, true, false);
+        auditLogService.log(player, "MAIL_INBOX_VIEW", "viewed inbox");
     }
 
     private void handleUnread(final Player player, final String[] args) {
-        if (!player.hasPermission("ezchat.mail.unread")) {
-            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.no-permission", "&cYou do not have permission.")));
-            return;
-        }
-
         final int page = readPage(args, 1);
         final List<MailEntry> unread = mailManager.getUnreadInbox(player.getUniqueId());
         if (unread.isEmpty()) {
@@ -204,6 +201,7 @@ public final class MailCommand implements CommandExecutor {
         }
 
         sendMailPage(player, "&6&lUnread Mail", unread, page, true, true);
+        auditLogService.log(player, "MAIL_UNREAD_VIEW", "viewed unread mail");
     }
 
     private void handleReceived(final Player player, final String[] args) {
@@ -217,23 +215,23 @@ public final class MailCommand implements CommandExecutor {
             return;
         }
 
-        final OfflinePlayer source = resolveOfflinePlayer(args[1]);
-        if (source == null || source.getUniqueId() == null) {
+        final OfflinePlayer sender = resolveOfflinePlayer(args[1]);
+        if (sender == null || sender.getUniqueId() == null) {
             player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.player-not-found", "&cPlayer not found.")));
             return;
         }
 
         final int page = readPage(args, 2);
-        final List<MailEntry> received = mailManager.getInboxFromSender(player.getUniqueId(), source.getUniqueId());
+        final List<MailEntry> received = mailManager.getInboxFromSender(player.getUniqueId(), sender.getUniqueId());
         if (received.isEmpty()) {
-            final String sourceName = source.getName() != null ? source.getName() : args[1];
+            final String senderName = sender.getName() != null ? sender.getName() : args[1];
             player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.no-mail-from-player", "&7No received mail from {player}.")
-                    .replace("{player}", sourceName)));
+                    .replace("{player}", senderName)));
             return;
         }
 
-        final String sourceName = source.getName() != null ? source.getName() : args[1];
-        sendMailPage(player, "&6&lReceived from " + sourceName, received, page, true, true);
+        sendMailPage(player, "&6&lReceived from " + (sender.getName() == null ? args[1] : sender.getName()), received, page, true, true);
+        auditLogService.log(player, "MAIL_RECEIVED_VIEW", "viewed received mail from " + (sender.getName() == null ? args[1] : sender.getName()));
     }
 
     private void handleSent(final Player player, final String[] args) {
@@ -243,7 +241,7 @@ public final class MailCommand implements CommandExecutor {
         }
 
         if (args.length == 1 || isNumber(args[1])) {
-            final int page = args.length > 1 ? readPage(args, 1) : 1;
+            final int page = readPage(args, 1);
             final Set<String> targets = mailManager.getUniqueSentTargetNames(player.getUniqueId());
             if (targets.isEmpty()) {
                 player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.sent-empty", "&7You have not sent any mail.")));
@@ -270,6 +268,46 @@ public final class MailCommand implements CommandExecutor {
 
         final String targetName = target.getName() != null ? target.getName() : args[1];
         sendMailPage(player, "&6&lSent to " + targetName, sentTo, page, false, false);
+        auditLogService.log(player, "MAIL_SENT_VIEW", "viewed sent mail to " + targetName);
+    }
+
+    private void handleRead(final Player player, final String[] args) {
+        if (args.length != 2) {
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.read-invalid-usage", "&cUsage: /mail read <id>")));
+            return;
+        }
+        final Optional<MailEntry> mailEntry = mailManager.getInboxById(player.getUniqueId(), args[1]);
+        if (mailEntry.isEmpty()) {
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.mail-not-found", "&cMail entry not found.")));
+            return;
+        }
+        final MailEntry entry = mailEntry.get();
+        if (!entry.isRead()) {
+            mailManager.markAsRead(player.getUniqueId(), entry.getId());
+        }
+
+        player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.mail-read-header", "&8&m----------------")));
+        player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.mail-read-from", "&eFrom: &f{player}").replace("{player}", entry.getSenderName())));
+        player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.mail-read-to", "&eTo: &f{player}").replace("{player}", entry.getReceiverName())));
+        player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.mail-read-time", "&eTime: &f{time}").replace("{time}", TimeFormatUtil.formatTimestamp(entry.getTimestamp()))));
+        player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.mail-read-message", "&eMessage: &f{message}").replace("{message}", entry.getMessage())));
+        player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.mail-read-header", "&8&m----------------")));
+        auditLogService.log(player, "MAIL_READ", "read mail id=" + entry.getId());
+    }
+
+    private void handleDelete(final Player player, final String[] args) {
+        if (args.length != 2) {
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.delete-invalid-usage", "&cUsage: /mail delete <id>")));
+            return;
+        }
+
+        if (!mailManager.deleteInboxById(player.getUniqueId(), args[1])) {
+            player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.mail-not-found", "&cMail entry not found.")));
+            return;
+        }
+
+        player.sendMessage(plugin.colorize(plugin.getConfigManager().getMailConfig().getString("messages.mail-deleted", "&aMail deleted.")));
+        auditLogService.log(player, "MAIL_DELETE", "deleted mail id=" + args[1]);
     }
 
     private void sendSentTargets(final Player player, final List<String> targets, final int page) {
@@ -304,7 +342,7 @@ public final class MailCommand implements CommandExecutor {
             final String status = entry.isRead() ? "&aREAD" : "&cUNREAD";
             final String preview = shorten(entry.getMessage(), 48);
             final String time = TimeFormatUtil.formatTimestamp(entry.getTimestamp());
-            player.sendMessage(plugin.colorize("&8#" + entry.getId().substring(0, 8) + " &7[" + status + "&7] &f" + person + " &8| &7" + time));
+            player.sendMessage(plugin.colorize("&8#" + entry.getId() + " &7[" + status + "&7] &f" + person + " &8| &7" + time));
             player.sendMessage(plugin.colorize("&7" + preview));
         }
 
@@ -370,6 +408,8 @@ public final class MailCommand implements CommandExecutor {
         player.sendMessage(plugin.colorize("&e/mail <player> <message> &7- Send persistent mail"));
         player.sendMessage(plugin.colorize("&e/mail inbox [page] &7- View inbox"));
         player.sendMessage(plugin.colorize("&e/mail unread [page] &7- View unread mail"));
+        player.sendMessage(plugin.colorize("&e/mail read <id> &7- Read full mail"));
+        player.sendMessage(plugin.colorize("&e/mail delete <id> &7- Delete mail from your inbox"));
         player.sendMessage(plugin.colorize("&e/mail received <player> [page] &7- View mail from player"));
         player.sendMessage(plugin.colorize("&e/mail sent [page] &7- List players you've mailed"));
         player.sendMessage(plugin.colorize("&e/mail sent <player> [page] &7- View mail sent to player"));

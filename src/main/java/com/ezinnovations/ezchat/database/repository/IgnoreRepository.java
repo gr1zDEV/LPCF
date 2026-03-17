@@ -7,11 +7,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class IgnoreRepository {
+
+    public record IgnoreEntry(UUID ownerUuid, UUID targetUuid, IgnoreManager.IgnoreType type) {
+    }
 
     private final DatabaseManager databaseManager;
 
@@ -36,6 +41,25 @@ public final class IgnoreRepository {
         }
 
         return data;
+    }
+
+    public List<IgnoreEntry> findByOwner(final UUID ownerUuid) throws SQLException {
+        final List<IgnoreEntry> entries = new ArrayList<>();
+        final String sql = "SELECT owner_uuid, target_uuid, ignore_type FROM ignores WHERE owner_uuid = ? ORDER BY target_uuid ASC";
+        try (Connection connection = databaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, ownerUuid.toString());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    entries.add(new IgnoreEntry(
+                            UUID.fromString(resultSet.getString("owner_uuid")),
+                            UUID.fromString(resultSet.getString("target_uuid")),
+                            IgnoreManager.IgnoreType.valueOf(resultSet.getString("ignore_type"))
+                    ));
+                }
+            }
+        }
+        return entries;
     }
 
     public void setIgnore(final UUID ownerUuid, final UUID targetUuid, final IgnoreManager.IgnoreType type) throws SQLException {
@@ -65,13 +89,24 @@ public final class IgnoreRepository {
         }
     }
 
-    public void removeIgnore(final UUID ownerUuid, final UUID targetUuid) throws SQLException {
+    public int removeIgnore(final UUID ownerUuid, final UUID targetUuid) throws SQLException {
         final String deleteSql = "DELETE FROM ignores WHERE owner_uuid = ? AND target_uuid = ?";
         try (Connection connection = databaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(deleteSql)) {
             statement.setString(1, ownerUuid.toString());
             statement.setString(2, targetUuid.toString());
-            statement.executeUpdate();
+            return statement.executeUpdate();
+        }
+    }
+
+    public int removeIgnore(final UUID ownerUuid, final UUID targetUuid, final IgnoreManager.IgnoreType type) throws SQLException {
+        final String deleteSql = "DELETE FROM ignores WHERE owner_uuid = ? AND target_uuid = ? AND ignore_type = ?";
+        try (Connection connection = databaseManager.getConnection();
+             PreparedStatement statement = connection.prepareStatement(deleteSql)) {
+            statement.setString(1, ownerUuid.toString());
+            statement.setString(2, targetUuid.toString());
+            statement.setString(3, type.name());
+            return statement.executeUpdate();
         }
     }
 

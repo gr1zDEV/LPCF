@@ -4,6 +4,13 @@ import com.ezinnovations.ezchat.commands.BroadcastSubcommand;
 import com.ezinnovations.ezchat.commands.ChatToggleCommand;
 import com.ezinnovations.ezchat.commands.EzChatMuteCommand;
 import com.ezinnovations.ezchat.commands.EzChatMuteTempCommand;
+import com.ezinnovations.ezchat.commands.EzChatMuteInfoCommand;
+import com.ezinnovations.ezchat.commands.EzChatUnmuteCommand;
+import com.ezinnovations.ezchat.commands.IgnoreListCommand;
+import com.ezinnovations.ezchat.commands.ToggleMailSpyCommand;
+import com.ezinnovations.ezchat.commands.ToggleSocialSpyCommand;
+import com.ezinnovations.ezchat.commands.UnignoreCommand;
+import com.ezinnovations.ezchat.service.SpyService;
 import com.ezinnovations.ezchat.commands.EzChatLogsCommand;
 import com.ezinnovations.ezchat.commands.IgnoreCommand;
 import com.ezinnovations.ezchat.commands.MailCommand;
@@ -83,6 +90,8 @@ public final class EzChat extends JavaPlugin {
     private EzChatLogsCommand ezChatLogsCommand;
     private EzChatMuteCommand ezChatMuteCommand;
     private EzChatMuteTempCommand ezChatMuteTempCommand;
+    private EzChatUnmuteCommand ezChatUnmuteCommand;
+    private EzChatMuteInfoCommand ezChatMuteInfoCommand;
     private AdvertisingCheckService advertisingCheckService;
     private ProfanityCheckService profanityCheckService;
     private StaffAlertService staffAlertService;
@@ -153,6 +162,9 @@ public final class EzChat extends JavaPlugin {
         this.ezChatLogsCommand = new EzChatLogsCommand(this, configManager.getLogsConfig(), communicationLogService, auditLogService);
         this.ezChatMuteCommand = new EzChatMuteCommand(this, muteService, auditLogService, discordNotificationService, this.staffAlertService);
         this.ezChatMuteTempCommand = new EzChatMuteTempCommand(this, muteService, auditLogService, discordNotificationService, this.staffAlertService);
+        this.ezChatUnmuteCommand = new EzChatUnmuteCommand(this, muteService, auditLogService, discordNotificationService);
+        this.ezChatMuteInfoCommand = new EzChatMuteInfoCommand(this, muteService);
+        final SpyService spyService = new SpyService(this, this.configManager.getStaffConfig(), this.chatToggleManager);
 
         getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.featureManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, this.staffChatService), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this, this.featureManager, this.mailManager), this);
@@ -166,13 +178,13 @@ public final class EzChat extends JavaPlugin {
         }
 
         if (getCommand("msg") != null) {
-            getCommand("msg").setExecutor(new MessageCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService));
+            getCommand("msg").setExecutor(new MessageCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, spyService));
         } else {
             getLogger().warning("[EzChat] Failed to register /msg command.");
         }
 
         if (getCommand("reply") != null) {
-            getCommand("reply").setExecutor(new ReplyCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService));
+            getCommand("reply").setExecutor(new ReplyCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, spyService));
         } else {
             getLogger().warning("[EzChat] Failed to register /reply command.");
         }
@@ -189,8 +201,20 @@ public final class EzChat extends JavaPlugin {
             getLogger().warning("[EzChat] Failed to register /ignore command.");
         }
 
+        if (getCommand("ignorelist") != null) {
+            getCommand("ignorelist").setExecutor(new IgnoreListCommand(this, this.featureManager, this.ignoreManager));
+        } else {
+            getLogger().warning("[EzChat] Failed to register /ignorelist command.");
+        }
+
+        if (getCommand("unignore") != null) {
+            getCommand("unignore").setExecutor(new UnignoreCommand(this, this.featureManager, this.ignoreManager, auditLogService));
+        } else {
+            getLogger().warning("[EzChat] Failed to register /unignore command.");
+        }
+
         if (getCommand("mail") != null) {
-            getCommand("mail").setExecutor(new MailCommand(this, this.featureManager, this.mailManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, auditLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService));
+            getCommand("mail").setExecutor(new MailCommand(this, this.featureManager, this.mailManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, auditLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, spyService));
         } else {
             getLogger().warning("[EzChat] Failed to register /mail command.");
         }
@@ -199,6 +223,18 @@ public final class EzChat extends JavaPlugin {
             getCommand("togglemail").setExecutor(new ToggleMailCommand(this, this.featureManager, this.chatToggleManager, auditLogService, discordNotificationService));
         } else {
             getLogger().warning("[EzChat] Failed to register /togglemail command.");
+        }
+
+        if (getCommand("togglesocialspy") != null) {
+            getCommand("togglesocialspy").setExecutor(new ToggleSocialSpyCommand(this, spyService, auditLogService));
+        } else {
+            getLogger().warning("[EzChat] Failed to register /togglesocialspy command.");
+        }
+
+        if (getCommand("togglemailspy") != null) {
+            getCommand("togglemailspy").setExecutor(new ToggleMailSpyCommand(this, spyService, auditLogService));
+        } else {
+            getLogger().warning("[EzChat] Failed to register /togglemailspy command.");
         }
         if (getCommand("toggleservermsg") != null) {
             getCommand("toggleservermsg").setExecutor(new ToggleServerMessageCommand(this, this.configManager.getServerMessageConfig(), serverMessageService));
@@ -276,6 +312,14 @@ public final class EzChat extends JavaPlugin {
 
         if (args.length >= 1 && "mutetemp".equalsIgnoreCase(args[0]) && ezChatMuteTempCommand != null) {
             return ezChatMuteTempCommand.execute(sender, args);
+        }
+
+        if (args.length >= 1 && "unmute".equalsIgnoreCase(args[0]) && ezChatUnmuteCommand != null) {
+            return ezChatUnmuteCommand.execute(sender, args);
+        }
+
+        if (args.length >= 1 && "muteinfo".equalsIgnoreCase(args[0]) && ezChatMuteInfoCommand != null) {
+            return ezChatMuteInfoCommand.execute(sender, args);
         }
 
         if (args.length >= 1 && "staffalert".equalsIgnoreCase(args[0]) && staffAlertSubcommand != null) {

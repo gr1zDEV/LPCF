@@ -12,6 +12,7 @@ import com.ezinnovations.ezchat.moderation.ProfanityDetectionResult;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
 import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.service.MuteService;
+import com.ezinnovations.ezchat.service.SpyService;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -33,6 +34,7 @@ public final class MessageCommand implements CommandExecutor {
     private final DiscordNotificationService discordNotificationService;
     private final AdvertisingCheckService advertisingCheckService;
     private final ProfanityCheckService profanityCheckService;
+    private final SpyService spyService;
 
     public MessageCommand(final EzChat plugin,
                           final FeatureManager featureManager,
@@ -43,7 +45,8 @@ public final class MessageCommand implements CommandExecutor {
                           final MuteService muteService,
                           final DiscordNotificationService discordNotificationService,
                           final AdvertisingCheckService advertisingCheckService,
-                          final ProfanityCheckService profanityCheckService) {
+                          final ProfanityCheckService profanityCheckService,
+                          final SpyService spyService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.messageManager = messageManager;
@@ -54,6 +57,7 @@ public final class MessageCommand implements CommandExecutor {
         this.discordNotificationService = discordNotificationService;
         this.advertisingCheckService = advertisingCheckService;
         this.profanityCheckService = profanityCheckService;
+        this.spyService = spyService;
     }
 
     @Override
@@ -133,6 +137,7 @@ public final class MessageCommand implements CommandExecutor {
         messageManager.updateConversation(player, receiver);
         communicationLogService.logPrivateMessage(player.getUniqueId(), player.getName(), receiver.getUniqueId(), receiver.getName(), message);
         discordNotificationService.sendPrivateMessage(player.getUniqueId(), player.getName(), receiver.getUniqueId(), receiver.getName(), message);
+        spyService.dispatchPrivateMessageSpy(player, receiver, message);
         return true;
     }
 }

@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -115,6 +116,15 @@ public final class MailManager {
         }
     }
 
+    public Optional<MailEntry> getInboxById(final UUID playerUuid, final String id) {
+        try {
+            return mailRepository.findInboxById(playerUuid, id);
+        } catch (final SQLException exception) {
+            plugin.getLogger().warning("Failed to read mail by id for " + playerUuid + ": " + exception.getMessage());
+            return Optional.empty();
+        }
+    }
+
     public void markAsRead(final UUID playerUuid, final List<MailEntry> entries) {
         if (entries.isEmpty()) {
             return;
@@ -129,6 +139,23 @@ public final class MailManager {
             mailRepository.markAsRead(playerUuid, ids);
         } catch (final SQLException exception) {
             plugin.getLogger().warning("Failed to mark mail as read for " + playerUuid + ": " + exception.getMessage());
+        }
+    }
+
+    public void markAsRead(final UUID playerUuid, final String id) {
+        try {
+            mailRepository.markAsRead(playerUuid, id);
+        } catch (final SQLException exception) {
+            plugin.getLogger().warning("Failed to mark mail as read for " + playerUuid + ": " + exception.getMessage());
+        }
+    }
+
+    public boolean deleteInboxById(final UUID playerUuid, final String id) {
+        try {
+            return mailRepository.deleteInboxById(playerUuid, id) > 0;
+        } catch (final SQLException exception) {
+            plugin.getLogger().warning("Failed to delete mail for " + playerUuid + ": " + exception.getMessage());
+            return false;
         }
     }
 

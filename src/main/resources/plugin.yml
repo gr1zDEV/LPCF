@@ -10,7 +10,7 @@ softdepend: [PlaceholderAPI, floodgate, Geyser-Spigot]
 commands:
   ezchat:
     description: EzChat commands.
-    usage: "Usage: /ezchat <reload|clear|debug|logs|mute|mutetemp|staffalert|broadcast>"
+    usage: "Usage: /ezchat <reload|clear|debug|logs|mute|mutetemp|unmute|muteinfo|staffalert|broadcast>"
   togglechat:
     description: Toggle receiving public chat.
     usage: "Usage: /togglechat [on|off]"
@@ -35,6 +35,23 @@ commands:
     description: Toggle receiving mail
     usage: "Usage: /togglemail [on|off]"
     permission: ezchat.togglemail
+
+  togglesocialspy:
+    description: Toggle live private-message social spy.
+    usage: "Usage: /togglesocialspy"
+    permission: ezchat.socialspy
+  togglemailspy:
+    description: Toggle live mail spy.
+    usage: "Usage: /togglemailspy"
+    permission: ezchat.mailspy
+  ignorelist:
+    description: View your ignore entries.
+    usage: "Usage: /ignorelist"
+    permission: ezchat.ignore
+  unignore:
+    description: Remove an ignore entry.
+    usage: "Usage: /unignore <player> <ALL|CHAT|MSG|MAIL|ALL_TYPES>"
+    permission: ezchat.ignore
   toggleservermsg:
     description: Toggle receiving server broadcast messages.
     usage: "Usage: /toggleservermsg [on|off]"
@@ -126,6 +143,25 @@ permissions:
   ezchat.mutetemp:
     description: Allows use of /ezchat mutetemp
     default: op
+
+  ezchat.unmute:
+    description: Allows use of /ezchat unmute
+    default: op
+  ezchat.muteinfo:
+    description: Allows use of /ezchat muteinfo
+    default: op
+  ezchat.socialspy:
+    description: Allows use of /togglesocialspy and receiving PM spy.
+    default: op
+  ezchat.mailspy:
+    description: Allows use of /togglemailspy and receiving mail spy.
+    default: op
+  ezchat.mail.read:
+    description: Allows use of /mail read
+    default: true
+  ezchat.mail.delete:
+    description: Allows use of /mail delete
+    default: true
 
   ezchat.servermsg.toggle:
     description: Allows use of /toggleservermsg

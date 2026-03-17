@@ -21,6 +21,8 @@ public final class ChatToggleManager {
     private final Set<UUID> staffChatModeEnabledPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> deathMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
     private final Set<UUID> joinLeaveMessagesDisabledPlayers = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> socialSpyEnabledPlayers = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> mailSpyEnabledPlayers = ConcurrentHashMap.newKeySet();
 
     public ChatToggleManager(final EzChat plugin, final ToggleRepository toggleRepository) {
         this.plugin = plugin;
@@ -36,6 +38,8 @@ public final class ChatToggleManager {
         staffChatModeEnabledPlayers.clear();
         deathMessagesDisabledPlayers.clear();
         joinLeaveMessagesDisabledPlayers.clear();
+        socialSpyEnabledPlayers.clear();
+        mailSpyEnabledPlayers.clear();
 
         try {
             final Map<UUID, ToggleRepository.ToggleState> toggles = toggleRepository.loadAll();
@@ -64,12 +68,17 @@ public final class ChatToggleManager {
                 if (!state.joinLeaveMessagesEnabled()) {
                     joinLeaveMessagesDisabledPlayers.add(uuid);
                 }
+                if (state.socialSpyEnabled()) {
+                    socialSpyEnabledPlayers.add(uuid);
+                }
+                if (state.mailSpyEnabled()) {
+                    mailSpyEnabledPlayers.add(uuid);
+                }
             }
         } catch (final SQLException exception) {
             plugin.getLogger().severe("Failed to load toggle data from SQLite: " + exception.getMessage());
         }
     }
-
 
     public boolean hasToggleState(final UUID uuid) {
         return knownTogglePlayers.contains(uuid);
@@ -171,7 +180,6 @@ public final class ChatToggleManager {
         return nowDisabled;
     }
 
-
     public boolean areServerMessagesDisabled(final UUID uuid) {
         return serverMessagesDisabledPlayers.contains(uuid);
     }
@@ -203,6 +211,7 @@ public final class ChatToggleManager {
         persist(uuid);
         return nowDisabled;
     }
+
     public boolean isStaffChatModeEnabled(final UUID uuid) {
         return staffChatModeEnabledPlayers.contains(uuid);
     }
@@ -234,7 +243,6 @@ public final class ChatToggleManager {
         persist(uuid);
         return nowEnabled;
     }
-
 
     public boolean areDeathMessagesDisabled(final UUID uuid) {
         return deathMessagesDisabledPlayers.contains(uuid);
@@ -268,8 +276,6 @@ public final class ChatToggleManager {
         return nowDisabled;
     }
 
-
-
     public boolean areJoinLeaveMessagesDisabled(final UUID uuid) {
         return joinLeaveMessagesDisabledPlayers.contains(uuid);
     }
@@ -302,6 +308,40 @@ public final class ChatToggleManager {
         return nowDisabled;
     }
 
+    public boolean isSocialSpyEnabled(final UUID uuid) {
+        return socialSpyEnabledPlayers.contains(uuid);
+    }
+
+    public boolean toggleSocialSpy(final UUID uuid) {
+        final boolean nowEnabled;
+        if (socialSpyEnabledPlayers.contains(uuid)) {
+            socialSpyEnabledPlayers.remove(uuid);
+            nowEnabled = false;
+        } else {
+            socialSpyEnabledPlayers.add(uuid);
+            nowEnabled = true;
+        }
+        persist(uuid);
+        return nowEnabled;
+    }
+
+    public boolean isMailSpyEnabled(final UUID uuid) {
+        return mailSpyEnabledPlayers.contains(uuid);
+    }
+
+    public boolean toggleMailSpy(final UUID uuid) {
+        final boolean nowEnabled;
+        if (mailSpyEnabledPlayers.contains(uuid)) {
+            mailSpyEnabledPlayers.remove(uuid);
+            nowEnabled = false;
+        } else {
+            mailSpyEnabledPlayers.add(uuid);
+            nowEnabled = true;
+        }
+        persist(uuid);
+        return nowEnabled;
+    }
+
     public void save() {
         // Persistence is immediate.
     }
@@ -317,7 +357,9 @@ public final class ChatToggleManager {
                     !serverMessagesDisabledPlayers.contains(uuid),
                     staffChatModeEnabledPlayers.contains(uuid),
                     !deathMessagesDisabledPlayers.contains(uuid),
-                    !joinLeaveMessagesDisabledPlayers.contains(uuid)
+                    !joinLeaveMessagesDisabledPlayers.contains(uuid),
+                    socialSpyEnabledPlayers.contains(uuid),
+                    mailSpyEnabledPlayers.contains(uuid)
             );
         } catch (final SQLException exception) {
             plugin.getLogger().warning("Failed to persist toggle for " + uuid + ": " + exception.getMessage());

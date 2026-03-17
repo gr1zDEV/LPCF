@@ -70,24 +70,37 @@ public final class MuteService {
                                     final String targetName,
                                     final UUID actorUuid,
                                     final String actorName,
+                                    final String reason,
                                     final boolean replaceExisting) {
-        return setMute(targetUuid, targetName, actorUuid, actorName, null, replaceExisting, MuteEntry.MuteType.PERMANENT);
+        return setMute(targetUuid, targetName, actorUuid, actorName, reason, null, replaceExisting, MuteEntry.MuteType.PERMANENT);
     }
 
     public boolean setTemporaryMute(final UUID targetUuid,
                                     final String targetName,
                                     final UUID actorUuid,
                                     final String actorName,
+                                    final String reason,
                                     final long durationMillis,
                                     final boolean replaceExisting) {
         final long expiresAt = System.currentTimeMillis() + durationMillis;
-        return setMute(targetUuid, targetName, actorUuid, actorName, expiresAt, replaceExisting, MuteEntry.MuteType.TEMPORARY);
+        return setMute(targetUuid, targetName, actorUuid, actorName, reason, expiresAt, replaceExisting, MuteEntry.MuteType.TEMPORARY);
+    }
+
+    public boolean unmute(final UUID targetUuid) {
+        try {
+            muteRepository.delete(targetUuid);
+            return true;
+        } catch (final SQLException exception) {
+            plugin.getLogger().warning("Failed to remove mute entry: " + exception.getMessage());
+            return false;
+        }
     }
 
     private boolean setMute(final UUID targetUuid,
                             final String targetName,
                             final UUID actorUuid,
                             final String actorName,
+                            final String reason,
                             final Long expiresAt,
                             final boolean replaceExisting,
                             final MuteEntry.MuteType type) {
@@ -99,7 +112,7 @@ public final class MuteService {
                 targetUuid,
                 targetName,
                 type,
-                null,
+                reason,
                 System.currentTimeMillis(),
                 expiresAt,
                 actorUuid,

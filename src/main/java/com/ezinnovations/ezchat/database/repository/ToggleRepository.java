@@ -20,7 +20,7 @@ public final class ToggleRepository {
 
     public Map<UUID, ToggleState> loadAll() throws SQLException {
         final Map<UUID, ToggleState> states = new HashMap<>();
-        final String sql = "SELECT player_uuid, chat_enabled, msg_enabled, mail_enabled, server_messages_enabled, staff_chat_mode_enabled, death_messages_enabled, join_leave_messages_enabled FROM toggles";
+        final String sql = "SELECT player_uuid, chat_enabled, msg_enabled, mail_enabled, server_messages_enabled, staff_chat_mode_enabled, death_messages_enabled, join_leave_messages_enabled, social_spy_enabled, mail_spy_enabled FROM toggles";
 
         try (Connection connection = databaseManager.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql);
@@ -34,7 +34,10 @@ public final class ToggleRepository {
                 final boolean staffChatModeEnabled = resultSet.getInt("staff_chat_mode_enabled") == 1;
                 final boolean deathMessagesEnabled = resultSet.getInt("death_messages_enabled") == 1;
                 final boolean joinLeaveMessagesEnabled = resultSet.getInt("join_leave_messages_enabled") == 1;
-                states.put(uuid, new ToggleState(chatEnabled, msgEnabled, mailEnabled, serverMessagesEnabled, staffChatModeEnabled, deathMessagesEnabled, joinLeaveMessagesEnabled));
+                final boolean socialSpyEnabled = resultSet.getInt("social_spy_enabled") == 1;
+                final boolean mailSpyEnabled = resultSet.getInt("mail_spy_enabled") == 1;
+                states.put(uuid, new ToggleState(chatEnabled, msgEnabled, mailEnabled, serverMessagesEnabled, staffChatModeEnabled,
+                        deathMessagesEnabled, joinLeaveMessagesEnabled, socialSpyEnabled, mailSpyEnabled));
             }
         }
 
@@ -48,10 +51,12 @@ public final class ToggleRepository {
                        final boolean serverMessagesEnabled,
                        final boolean staffChatModeEnabled,
                        final boolean deathMessagesEnabled,
-                       final boolean joinLeaveMessagesEnabled) throws SQLException {
+                       final boolean joinLeaveMessagesEnabled,
+                       final boolean socialSpyEnabled,
+                       final boolean mailSpyEnabled) throws SQLException {
         final String sql = """
-                INSERT INTO toggles(player_uuid, chat_enabled, msg_enabled, mail_enabled, server_messages_enabled, staff_chat_mode_enabled, death_messages_enabled, join_leave_messages_enabled)
-                VALUES(?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO toggles(player_uuid, chat_enabled, msg_enabled, mail_enabled, server_messages_enabled, staff_chat_mode_enabled, death_messages_enabled, join_leave_messages_enabled, social_spy_enabled, mail_spy_enabled)
+                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(player_uuid) DO UPDATE SET
                     chat_enabled=excluded.chat_enabled,
                     msg_enabled=excluded.msg_enabled,
@@ -59,7 +64,9 @@ public final class ToggleRepository {
                     server_messages_enabled=excluded.server_messages_enabled,
                     staff_chat_mode_enabled=excluded.staff_chat_mode_enabled,
                     death_messages_enabled=excluded.death_messages_enabled,
-                    join_leave_messages_enabled=excluded.join_leave_messages_enabled
+                    join_leave_messages_enabled=excluded.join_leave_messages_enabled,
+                    social_spy_enabled=excluded.social_spy_enabled,
+                    mail_spy_enabled=excluded.mail_spy_enabled
                 """;
 
         try (Connection connection = databaseManager.getConnection();
@@ -72,6 +79,8 @@ public final class ToggleRepository {
             statement.setInt(6, staffChatModeEnabled ? 1 : 0);
             statement.setInt(7, deathMessagesEnabled ? 1 : 0);
             statement.setInt(8, joinLeaveMessagesEnabled ? 1 : 0);
+            statement.setInt(9, socialSpyEnabled ? 1 : 0);
+            statement.setInt(10, mailSpyEnabled ? 1 : 0);
             statement.executeUpdate();
         }
     }
@@ -91,6 +100,8 @@ public final class ToggleRepository {
                               boolean serverMessagesEnabled,
                               boolean staffChatModeEnabled,
                               boolean deathMessagesEnabled,
-                              boolean joinLeaveMessagesEnabled) {
+                              boolean joinLeaveMessagesEnabled,
+                              boolean socialSpyEnabled,
+                              boolean mailSpyEnabled) {
     }
 }

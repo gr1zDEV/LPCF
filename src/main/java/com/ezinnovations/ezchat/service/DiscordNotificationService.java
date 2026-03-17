@@ -73,6 +73,7 @@ public final class DiscordNotificationService {
                                final String actorName,
                                final String target,
                                final String duration,
+                               final String reason,
                                final boolean temporary) {
         final String key = temporary ? "temp-mute-action" : "mute-action";
         final String fallback = temporary
@@ -88,7 +89,8 @@ public final class DiscordNotificationService {
                 Map.of(
                         "actor", actorName,
                         "target", target,
-                        "duration", duration
+                        "duration", duration,
+                        "reason", reason == null ? "" : reason
                 )
         );
     }

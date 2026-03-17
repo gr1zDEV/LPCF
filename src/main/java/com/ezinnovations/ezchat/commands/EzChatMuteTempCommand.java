@@ -10,6 +10,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.OptionalLong;
 import java.util.UUID;
 
@@ -40,8 +41,8 @@ public final class EzChatMuteTempCommand {
             return true;
         }
 
-        if (args.length != 3) {
-            sender.sendMessage(plugin.colorize("&cUsage: /ezchat mutetemp <player> <duration>"));
+        if (args.length < 4) {
+            sender.sendMessage(plugin.colorize(muteService.getMessage("mutetemp-invalid-usage", "&cUsage: /ezchat mutetemp <player> <duration> <reason...>")));
             return true;
         }
 
@@ -57,11 +58,12 @@ public final class EzChatMuteTempCommand {
             return true;
         }
 
+        final String reason = Arrays.stream(args).skip(3).reduce((a, b) -> a + " " + b).orElse("No reason provided");
         final UUID actorUuid = sender instanceof Player player ? player.getUniqueId() : null;
         final String actorName = sender.getName();
         final String targetName = target.getName() != null ? target.getName() : args[1];
 
-        if (!muteService.setTemporaryMute(target.getUniqueId(), targetName, actorUuid, actorName, durationMillis.getAsLong(), true)) {
+        if (!muteService.setTemporaryMute(target.getUniqueId(), targetName, actorUuid, actorName, reason, durationMillis.getAsLong(), true)) {
             sender.sendMessage(plugin.colorize("&cFailed to save mute. Check console."));
             return true;
         }
@@ -69,10 +71,10 @@ public final class EzChatMuteTempCommand {
         sender.sendMessage(plugin.colorize(muteService.getMessage("temp-mute-success", "&aTemporarily muted {player} for {duration}.")
                 .replace("{player}", targetName)
                 .replace("{duration}", args[2])));
-        auditLogService.log(actorUuid, actorName, "TEMP_MUTE_SET", "temp-muted " + targetName + " for " + args[2]);
-        discordNotificationService.sendMuteAction(actorUuid, actorName, targetName, args[2], true);
+        auditLogService.log(actorUuid, actorName, "TEMP_MUTE_SET", "temp-muted " + targetName + " for " + args[2] + " reason=" + reason);
+        discordNotificationService.sendMuteAction(actorUuid, actorName, targetName, args[2], reason, true);
         if (staffAlertService.isAlertsEnabled()) {
-            staffAlertService.sendStaffAlert("Player temp-muted: " + targetName + " by " + actorName + " for " + args[2]);
+            staffAlertService.sendStaffAlert("Player temp-muted: " + targetName + " by " + actorName + " for " + args[2] + " reason: " + reason);
         }
         return true;
     }
