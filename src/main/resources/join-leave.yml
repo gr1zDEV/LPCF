@@ -8,6 +8,7 @@ settings:
   use-vanilla-leave-message: true
 
 formats:
+  # Supported placeholders: {player}, {displayname}, {message}
   join-message: "&8[&aJoin&8] &f{message}"
   leave-message: "&8[&cLeave&8] &f{message}"
 
