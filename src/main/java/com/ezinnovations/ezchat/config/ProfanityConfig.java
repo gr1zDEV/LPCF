@@ -51,10 +51,6 @@ public final class ProfanityConfig {
         return config.getBoolean("word-list.enabled", true);
     }
 
-    public List<String> getBlockedWords() {
-        return filterEmpty(config.getStringList("word-list.blocked"));
-    }
-
     public boolean isRegexEnabled() {
         return config.getBoolean("regex.enabled", true);
     }

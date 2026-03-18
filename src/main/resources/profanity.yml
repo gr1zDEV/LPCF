@@ -23,9 +23,6 @@ messages:
 
 word-list:
   enabled: true
-  blocked:
-    - "exampleword1"
-    - "exampleword2"
 
 regex:
   enabled: true

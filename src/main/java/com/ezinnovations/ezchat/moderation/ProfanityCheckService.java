@@ -1,6 +1,7 @@
 package com.ezinnovations.ezchat.moderation;
 
 import com.ezinnovations.ezchat.EzChat;
+import com.ezinnovations.ezchat.config.BlockedWordsConfig;
 import com.ezinnovations.ezchat.config.ProfanityConfig;
 import com.ezinnovations.ezchat.service.AuditLogService;
 import com.ezinnovations.ezchat.service.DiscordNotificationService;
@@ -23,6 +24,7 @@ public final class ProfanityCheckService {
 
     private final EzChat plugin;
     private final ProfanityConfig profanityConfig;
+    private final BlockedWordsConfig blockedWordsConfig;
     private final AuditLogService auditLogService;
     private final DiscordNotificationService discordNotificationService;
 
@@ -31,10 +33,12 @@ public final class ProfanityCheckService {
 
     public ProfanityCheckService(final EzChat plugin,
                                  final ProfanityConfig profanityConfig,
+                                 final BlockedWordsConfig blockedWordsConfig,
                                  final AuditLogService auditLogService,
                                  final DiscordNotificationService discordNotificationService) {
         this.plugin = plugin;
         this.profanityConfig = profanityConfig;
+        this.blockedWordsConfig = blockedWordsConfig;
         this.auditLogService = auditLogService;
         this.discordNotificationService = discordNotificationService;
         rebuildPatterns();
@@ -114,7 +118,7 @@ public final class ProfanityCheckService {
         regexPatterns.clear();
 
         if (profanityConfig.isWordListEnabled()) {
-            for (final String blockedWord : profanityConfig.getBlockedWords()) {
+            for (final String blockedWord : blockedWordsConfig.getBlockedWords()) {
                 wordPatterns.add(Pattern.compile("\\b" + Pattern.quote(blockedWord) + "\\b", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE));
             }
         }
