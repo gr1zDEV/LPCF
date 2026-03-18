@@ -46,7 +46,8 @@ public final class ReplyCommand implements CommandExecutor {
                         final MuteService muteService,
                         final DiscordNotificationService discordNotificationService,
                         final AdvertisingCheckService advertisingCheckService,
-                        final ProfanityCheckService profanityCheckService) {
+                        final ProfanityCheckService profanityCheckService,
+                        final SpyService spyService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.messageManager = messageManager;
