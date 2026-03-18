@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public final class JoinLeaveService {
@@ -61,12 +63,15 @@ public final class JoinLeaveService {
 
         final Player joinedPlayer = event.getPlayer();
         final String baseMessage = resolveJoinMessage(event, joinedPlayer);
-        if (baseMessage == null || baseMessage.isBlank()) {
+        final String formatted = formatConfiguredMessage(
+                "join-message",
+                "&8[&aJoin&8] &f{message}",
+                joinedPlayer,
+                baseMessage
+        );
+        if (formatted.isBlank()) {
             return;
         }
-
-        final String formatted = plugin.colorize(joinLeaveConfig.getFormat("join-message", "&8[&aJoin&8] &f{message}")
-                .replace("{message}", baseMessage));
 
         event.joinMessage(null);
         plugin.getServer().getGlobalRegionScheduler().execute(plugin, () -> {
@@ -93,12 +98,15 @@ public final class JoinLeaveService {
 
         final Player leftPlayer = event.getPlayer();
         final String baseMessage = resolveLeaveMessage(event, leftPlayer);
-        if (baseMessage == null || baseMessage.isBlank()) {
+        final String formatted = formatConfiguredMessage(
+                "leave-message",
+                "&8[&cLeave&8] &f{message}",
+                leftPlayer,
+                baseMessage
+        );
+        if (formatted.isBlank()) {
             return;
         }
-
-        final String formatted = plugin.colorize(joinLeaveConfig.getFormat("leave-message", "&8[&cLeave&8] &f{message}")
-                .replace("{message}", baseMessage));
 
         event.quitMessage(null);
         plugin.getServer().getGlobalRegionScheduler().execute(plugin, () -> {
@@ -116,6 +124,35 @@ public final class JoinLeaveService {
             communicationLogService.logLeave(leftPlayer.getUniqueId(), leftPlayer.getName(), formatted);
         }
         discordNotificationService.sendLeaveMessage(leftPlayer.getUniqueId(), leftPlayer.getName(), stripColors(formatted));
+    }
+
+    private String formatConfiguredMessage(final String formatKey,
+                                           final String fallbackFormat,
+                                           final Player player,
+                                           final String originalMessage) {
+        final String template = joinLeaveConfig.getFormat(formatKey, fallbackFormat);
+        final Map<String, String> placeholders = new LinkedHashMap<>();
+        placeholders.put("player", player.getName());
+        placeholders.put("displayname", resolveDisplayName(player));
+        placeholders.put("message", originalMessage == null ? "" : originalMessage);
+
+        return plugin.colorize(applyPlaceholders(template, placeholders));
+    }
+
+    private String resolveDisplayName(final Player player) {
+        final String displayName = player.getDisplayName();
+        if (displayName == null || displayName.isBlank()) {
+            return player.getName();
+        }
+        return displayName;
+    }
+
+    private String applyPlaceholders(final String template, final Map<String, String> placeholders) {
+        String formatted = template == null ? "" : template;
+        for (final Map.Entry<String, String> entry : placeholders.entrySet()) {
+            formatted = formatted.replace("{" + entry.getKey() + "}", entry.getValue());
+        }
+        return formatted;
     }
 
     private String resolveJoinMessage(final PlayerJoinEvent event, final Player joinedPlayer) {
