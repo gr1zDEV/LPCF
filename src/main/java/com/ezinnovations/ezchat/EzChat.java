@@ -113,6 +113,7 @@ public final class EzChat extends JavaPlugin {
         saveResource("discord.yml", false);
         saveResource("anti-spam.yml", false);
         saveResource("profanity.yml", false);
+        saveResource("blocked-words.yml", false);
         saveResource("staff.yml", false);
         saveResource("server-message.yml", false);
         saveResource("death-message.yml", false);
@@ -143,7 +144,7 @@ public final class EzChat extends JavaPlugin {
         final MuteService muteService = new MuteService(this, configManager.getMuteConfig(), muteRepository, auditLogService);
         this.staffAlertService = new StaffAlertService(this, configManager.getStaffConfig(), communicationLogService, auditLogService);
         this.advertisingCheckService = new AdvertisingCheckService(this, configManager.getAntiSpamConfig(), auditLogService, discordNotificationService, this.staffAlertService);
-        this.profanityCheckService = new ProfanityCheckService(this, configManager.getProfanityConfig(), auditLogService, discordNotificationService);
+        this.profanityCheckService = new ProfanityCheckService(this, configManager.getProfanityConfig(), configManager.getBlockedWordsConfig(), auditLogService, discordNotificationService);
 
         this.chatToggleManager = new ChatToggleManager(this, toggleRepository);
         this.chatToggleManager.load();

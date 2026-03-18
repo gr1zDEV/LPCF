@@ -2,6 +2,7 @@ package com.ezinnovations.ezchat.managers;
 
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.config.AntiSpamConfig;
+import com.ezinnovations.ezchat.config.BlockedWordsConfig;
 import com.ezinnovations.ezchat.config.DeathMessageConfig;
 import com.ezinnovations.ezchat.config.DiscordConfig;
 import com.ezinnovations.ezchat.config.LogsConfig;
@@ -30,6 +31,7 @@ public final class ConfigManager {
     private final DiscordConfig discordConfig;
     private final AntiSpamConfig antiSpamConfig;
     private final ProfanityConfig profanityConfig;
+    private final BlockedWordsConfig blockedWordsConfig;
     private final StaffConfig staffConfig;
     private final ServerMessageConfig serverMessageConfig;
     private final DeathMessageConfig deathMessageConfig;
@@ -42,6 +44,7 @@ public final class ConfigManager {
         this.discordConfig = new DiscordConfig(plugin);
         this.antiSpamConfig = new AntiSpamConfig(plugin);
         this.profanityConfig = new ProfanityConfig(plugin);
+        this.blockedWordsConfig = new BlockedWordsConfig(plugin);
         this.staffConfig = new StaffConfig(plugin);
         this.serverMessageConfig = new ServerMessageConfig(plugin);
         this.deathMessageConfig = new DeathMessageConfig(plugin);
@@ -70,6 +73,7 @@ public final class ConfigManager {
         discordConfig.reload();
         antiSpamConfig.reload();
         profanityConfig.reload();
+        blockedWordsConfig.reload();
         staffConfig.reload();
         serverMessageConfig.reload();
         deathMessageConfig.reload();
@@ -102,6 +106,10 @@ public final class ConfigManager {
 
     public ProfanityConfig getProfanityConfig() {
         return profanityConfig;
+    }
+
+    public BlockedWordsConfig getBlockedWordsConfig() {
+        return blockedWordsConfig;
     }
 
     public StaffConfig getStaffConfig() {
