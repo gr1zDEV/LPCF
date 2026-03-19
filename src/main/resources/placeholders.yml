@@ -1,0 +1,11 @@
+features:
+  enabled: true
+  settings-placeholders:
+    enabled: true
+
+settings:
+  raw-mode: "true-false"   # options: true-false, on-off
+
+formatting:
+  true-text: "&aON"
+  false-text: "&cOFF"

@@ -48,6 +48,7 @@ import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.managers.MailManager;
 import com.ezinnovations.ezchat.managers.MessageManager;
+import com.ezinnovations.ezchat.placeholder.EzChatPlaceholderExpansion;
 import com.ezinnovations.ezchat.service.AuditLogService;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
 import com.ezinnovations.ezchat.service.MuteService;
@@ -98,6 +99,7 @@ public final class EzChat extends JavaPlugin {
     private StaffChatService staffChatService;
     private StaffAlertSubcommand staffAlertSubcommand;
     private BroadcastSubcommand broadcastSubcommand;
+    private EzChatPlaceholderExpansion placeholderExpansion;
 
     @Override
     public void onEnable() {
@@ -118,6 +120,7 @@ public final class EzChat extends JavaPlugin {
         saveResource("server-message.yml", false);
         saveResource("death-message.yml", false);
         saveResource("join-leave.yml", false);
+        saveResource("placeholders.yml", false);
         this.configManager = new ConfigManager(this);
         this.configManager.reload();
         this.featureManager = new FeatureManager(this);
@@ -166,6 +169,8 @@ public final class EzChat extends JavaPlugin {
         this.ezChatUnmuteCommand = new EzChatUnmuteCommand(this, muteService, auditLogService, discordNotificationService);
         this.ezChatMuteInfoCommand = new EzChatMuteInfoCommand(this, muteService);
         final SpyService spyService = new SpyService(this, this.configManager.getStaffConfig(), this.chatToggleManager);
+
+        registerPlaceholderExpansion();
 
         getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.featureManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, this.staffChatService), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this, this.featureManager, this.mailManager), this);
@@ -345,6 +350,7 @@ public final class EzChat extends JavaPlugin {
             if (profanityCheckService != null) {
                 profanityCheckService.reload();
             }
+            registerPlaceholderExpansion();
             sender.sendMessage(colorize("&aEzChat has been reloaded."));
             return true;
         }
@@ -426,8 +432,37 @@ public final class EzChat extends JavaPlugin {
         return new ArrayList<>();
     }
 
+    private void registerPlaceholderExpansion() {
+        if (!getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            getLogger().info("[EzChat] PlaceholderAPI not found; EzChat placeholders remain disabled.");
+            return;
+        }
+
+        if (!this.configManager.getPlaceholdersConfig().isFeatureEnabled()) {
+            getLogger().info("[EzChat] PlaceholderAPI support is disabled in placeholders.yml.");
+            return;
+        }
+
+        if (this.placeholderExpansion != null) {
+            return;
+        }
+
+        this.placeholderExpansion = new EzChatPlaceholderExpansion(this, this.chatToggleManager, this.configManager.getPlaceholdersConfig());
+        if (this.placeholderExpansion.register()) {
+            getLogger().info("[EzChat] Registered PlaceholderAPI expansion for EzChat settings placeholders.");
+            return;
+        }
+
+        this.placeholderExpansion = null;
+        getLogger().warning("[EzChat] Failed to register PlaceholderAPI expansion for EzChat.");
+    }
+
     public ConfigManager getConfigManager() {
         return configManager;
+    }
+
+    public String renderConfigText(final String message) {
+        return colorize(translateHexColorCodes(message));
     }
 
     public String buildFormat(final Player player) {
