@@ -88,6 +88,10 @@ public final class ChatToggleManager {
         return hiddenChatPlayers.contains(uuid);
     }
 
+    public boolean isChatEnabled(final UUID uuid) {
+        return !isChatHidden(uuid);
+    }
+
     public boolean toggleChat(final UUID uuid) {
         final boolean nowHidden;
         if (hiddenChatPlayers.contains(uuid)) {
@@ -103,6 +107,10 @@ public final class ChatToggleManager {
 
     public boolean arePrivateMessagesDisabled(final UUID uuid) {
         return privateMessagesDisabledPlayers.contains(uuid);
+    }
+
+    public boolean isPrivateMessagesEnabled(final UUID uuid) {
+        return !arePrivateMessagesDisabled(uuid);
     }
 
     public boolean setChatHidden(final UUID uuid, final boolean hidden) {
@@ -152,6 +160,10 @@ public final class ChatToggleManager {
         return mailDisabledPlayers.contains(uuid);
     }
 
+    public boolean isMailEnabled(final UUID uuid) {
+        return !isMailDisabled(uuid);
+    }
+
     public boolean setMailDisabled(final UUID uuid, final boolean disabled) {
         final boolean changed;
         if (disabled) {
@@ -182,6 +194,10 @@ public final class ChatToggleManager {
 
     public boolean areServerMessagesDisabled(final UUID uuid) {
         return serverMessagesDisabledPlayers.contains(uuid);
+    }
+
+    public boolean isServerMessagesEnabled(final UUID uuid) {
+        return !areServerMessagesDisabled(uuid);
     }
 
     public boolean setServerMessagesDisabled(final UUID uuid, final boolean disabled) {
@@ -248,6 +264,10 @@ public final class ChatToggleManager {
         return deathMessagesDisabledPlayers.contains(uuid);
     }
 
+    public boolean isDeathMessagesEnabled(final UUID uuid) {
+        return !areDeathMessagesDisabled(uuid);
+    }
+
     public boolean setDeathMessagesDisabled(final UUID uuid, final boolean disabled) {
         final boolean changed;
         if (disabled) {
@@ -278,6 +298,10 @@ public final class ChatToggleManager {
 
     public boolean areJoinLeaveMessagesDisabled(final UUID uuid) {
         return joinLeaveMessagesDisabledPlayers.contains(uuid);
+    }
+
+    public boolean isJoinLeaveMessagesEnabled(final UUID uuid) {
+        return !areJoinLeaveMessagesDisabled(uuid);
     }
 
     public boolean setJoinLeaveMessagesDisabled(final UUID uuid, final boolean disabled) {
