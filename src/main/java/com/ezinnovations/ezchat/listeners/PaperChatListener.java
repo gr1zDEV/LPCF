@@ -2,18 +2,20 @@ package com.ezinnovations.ezchat.listeners;
 
 import com.ezinnovations.ezchat.EzChat;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
-import com.ezinnovations.ezchat.moderation.AdvertisingCheckService;
-import com.ezinnovations.ezchat.moderation.AdvertisingDetectionResult;
-import com.ezinnovations.ezchat.moderation.ProfanityCheckService;
-import com.ezinnovations.ezchat.moderation.ProfanityDetectionResult;
 import com.ezinnovations.ezchat.managers.FeatureManager;
 import com.ezinnovations.ezchat.managers.IgnoreManager;
+import com.ezinnovations.ezchat.moderation.AdvertisingCheckService;
+import com.ezinnovations.ezchat.moderation.AdvertisingDetectionResult;
+import com.ezinnovations.ezchat.moderation.FloodChannel;
+import com.ezinnovations.ezchat.moderation.FloodCheckService;
+import com.ezinnovations.ezchat.moderation.FloodDetectionResult;
+import com.ezinnovations.ezchat.moderation.ProfanityCheckService;
+import com.ezinnovations.ezchat.moderation.ProfanityDetectionResult;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
 import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.service.MuteService;
 import com.ezinnovations.ezchat.service.StaffChatService;
 import com.ezinnovations.ezchat.utils.FloodgateHook;
-
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
@@ -39,6 +41,7 @@ public final class PaperChatListener implements Listener {
     private final AdvertisingCheckService advertisingCheckService;
     private final ProfanityCheckService profanityCheckService;
     private final StaffChatService staffChatService;
+    private final FloodCheckService floodCheckService;
 
     public PaperChatListener(final EzChat plugin,
                              final FeatureManager featureManager,
@@ -50,7 +53,8 @@ public final class PaperChatListener implements Listener {
                              final DiscordNotificationService discordNotificationService,
                              final AdvertisingCheckService advertisingCheckService,
                              final ProfanityCheckService profanityCheckService,
-                             final StaffChatService staffChatService) {
+                             final StaffChatService staffChatService,
+                             final FloodCheckService floodCheckService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.chatToggleManager = chatToggleManager;
@@ -62,6 +66,7 @@ public final class PaperChatListener implements Listener {
         this.advertisingCheckService = advertisingCheckService;
         this.profanityCheckService = profanityCheckService;
         this.staffChatService = staffChatService;
+        this.floodCheckService = floodCheckService;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -77,8 +82,38 @@ public final class PaperChatListener implements Listener {
         }
 
         final Player player = event.getPlayer();
-
         final String rawMessage = LegacyComponentSerializer.legacySection().serialize(event.message());
+
+        if (staffChatService.isFeatureEnabled() && staffChatService.isStaffChatModeEnabled(player.getUniqueId()) && player.hasPermission("ezchat.staffchat")) {
+            if (floodCheckService.shouldCheckStaffChat() && !floodCheckService.shouldBypass(player)) {
+                final FloodDetectionResult detectionResult = floodCheckService.checkFlood(player.getUniqueId(), rawMessage, FloodChannel.STAFF);
+                if (floodCheckService.handleBlockedMessage(player, FloodChannel.STAFF, detectionResult, rawMessage)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            final String message = plugin.processMessage(player, rawMessage);
+            if (profanityCheckService.shouldScanStaffChat() && !profanityCheckService.shouldBypass(player)) {
+                final ProfanityDetectionResult detectionResult = profanityCheckService.checkProfanity(message);
+                if (profanityCheckService.handleBlockedMessage(player, ProfanityCheckService.CommunicationType.STAFF, detectionResult, message)) {
+                    event.setCancelled(true);
+                    return;
+                }
+            }
+
+            event.setCancelled(true);
+            staffChatService.sendStaffChat(player, message);
+            return;
+        }
+
+        if (floodCheckService.shouldCheckPublicChat() && !floodCheckService.shouldBypass(player)) {
+            final FloodDetectionResult detectionResult = floodCheckService.checkFlood(player.getUniqueId(), rawMessage, FloodChannel.PUBLIC);
+            if (floodCheckService.handleBlockedMessage(player, FloodChannel.PUBLIC, detectionResult, rawMessage)) {
+                event.setCancelled(true);
+                return;
+            }
+        }
 
         if (advertisingCheckService.shouldScanPublicChat() && !advertisingCheckService.shouldBypass(player)) {
             final AdvertisingDetectionResult detectionResult = advertisingCheckService.checkAdvertising(rawMessage);
@@ -96,27 +131,11 @@ public final class PaperChatListener implements Listener {
             }
         }
 
-        if (staffChatService.isFeatureEnabled() && staffChatService.isStaffChatModeEnabled(player.getUniqueId()) && player.hasPermission("ezchat.staffchat")) {
-            final String message = plugin.processMessage(player, rawMessage);
-            if (profanityCheckService.shouldScanStaffChat() && !profanityCheckService.shouldBypass(player)) {
-                final ProfanityDetectionResult detectionResult = profanityCheckService.checkProfanity(message);
-                if (profanityCheckService.handleBlockedMessage(player, ProfanityCheckService.CommunicationType.STAFF, detectionResult, message)) {
-                    event.setCancelled(true);
-                    return;
-                }
-            }
-
-            event.setCancelled(true);
-            staffChatService.sendStaffChat(player, message);
-            return;
-        }
-
         final UUID senderUuid = player.getUniqueId();
         event.viewers().removeIf(viewerAudience -> !shouldReceiveAudience(viewerAudience, senderUuid));
 
         final String format = plugin.buildFormat(player);
-        final String processedMessage = plugin.processMessage(player,
-                LegacyComponentSerializer.legacySection().serialize(event.message()));
+        final String processedMessage = plugin.processMessage(player, rawMessage);
 
         final String finalFormat = format.replace("{message}", processedMessage);
         final Component rendered = LegacyComponentSerializer.legacySection().deserialize(finalFormat);

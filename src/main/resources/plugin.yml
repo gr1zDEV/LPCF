@@ -134,6 +134,10 @@ permissions:
     description: Bypass profanity moderation checks
     default: op
 
+  ezchat.bypass.flood:
+    description: Bypass anti-flood moderation checks
+    default: op
+
   ezchat.logs:
     description: Allows use of /ezchat logs
     default: op

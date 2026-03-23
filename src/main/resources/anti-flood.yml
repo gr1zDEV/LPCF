@@ -1,0 +1,39 @@
+features:
+  enabled: true
+
+checks:
+  public-chat: true
+  private-messages: true
+  staff-chat: false
+
+cooldown:
+  enabled: true
+  milliseconds: 1500
+
+duplicate:
+  enabled: true
+  window-seconds: 15
+  max-duplicates: 2
+  normalize-case: true
+  trim-spaces: true
+
+burst:
+  enabled: true
+  window-seconds: 5
+  max-messages: 4
+
+actions:
+  block-message: true
+  notify-sender: true
+  audit-log: true
+  discord-log: false
+  include-blocked-content-in-audit: true
+
+permissions:
+  bypass: "ezchat.bypass.flood"
+
+messages:
+  feature-disabled: "&cThat feature is currently disabled."
+  cooldown: "&cYou are sending messages too quickly."
+  duplicate: "&cDo not repeat the same message."
+  burst: "&cYou are sending too many messages too quickly."
