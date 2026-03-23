@@ -1,6 +1,7 @@
 package com.ezinnovations.ezchat.managers;
 
 import com.ezinnovations.ezchat.EzChat;
+import com.ezinnovations.ezchat.config.AntiFloodConfig;
 import com.ezinnovations.ezchat.config.AntiSpamConfig;
 import com.ezinnovations.ezchat.config.BlockedWordsConfig;
 import com.ezinnovations.ezchat.config.DeathMessageConfig;
@@ -30,6 +31,7 @@ public final class ConfigManager {
     private final LogsConfig logsConfig;
     private final MuteConfig muteConfig;
     private final DiscordConfig discordConfig;
+    private final AntiFloodConfig antiFloodConfig;
     private final AntiSpamConfig antiSpamConfig;
     private final ProfanityConfig profanityConfig;
     private final BlockedWordsConfig blockedWordsConfig;
@@ -44,6 +46,7 @@ public final class ConfigManager {
         this.logsConfig = new LogsConfig(plugin);
         this.muteConfig = new MuteConfig(plugin);
         this.discordConfig = new DiscordConfig(plugin);
+        this.antiFloodConfig = new AntiFloodConfig(plugin);
         this.antiSpamConfig = new AntiSpamConfig(plugin);
         this.profanityConfig = new ProfanityConfig(plugin);
         this.blockedWordsConfig = new BlockedWordsConfig(plugin);
@@ -74,6 +77,7 @@ public final class ConfigManager {
         logsConfig.reload();
         muteConfig.reload();
         discordConfig.reload();
+        antiFloodConfig.reload();
         antiSpamConfig.reload();
         profanityConfig.reload();
         blockedWordsConfig.reload();
@@ -102,6 +106,10 @@ public final class ConfigManager {
 
     public DiscordConfig getDiscordConfig() {
         return discordConfig;
+    }
+
+    public AntiFloodConfig getAntiFloodConfig() {
+        return antiFloodConfig;
     }
 
     public AntiSpamConfig getAntiSpamConfig() {

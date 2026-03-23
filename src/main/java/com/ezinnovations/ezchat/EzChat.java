@@ -23,6 +23,7 @@ import com.ezinnovations.ezchat.commands.StaffChatCommand;
 import com.ezinnovations.ezchat.commands.ToggleStaffChatCommand;
 import com.ezinnovations.ezchat.commands.ToggleServerMessageCommand;
 import com.ezinnovations.ezchat.commands.ToggleDeathMessageCommand;
+import com.ezinnovations.ezchat.metrics.EzChatMetrics;
 import com.ezinnovations.ezchat.commands.StaffAlertSubcommand;
 import com.ezinnovations.ezchat.database.DatabaseManager;
 import com.ezinnovations.ezchat.database.SQLiteManager;
@@ -41,6 +42,7 @@ import com.ezinnovations.ezchat.listeners.PlayerJoinListener;
 import com.ezinnovations.ezchat.listeners.JoinLeaveMessageListener;
 import com.ezinnovations.ezchat.listeners.DeathMessageListener;
 import com.ezinnovations.ezchat.moderation.AdvertisingCheckService;
+import com.ezinnovations.ezchat.moderation.FloodCheckService;
 import com.ezinnovations.ezchat.moderation.ProfanityCheckService;
 import com.ezinnovations.ezchat.managers.ChatToggleManager;
 import com.ezinnovations.ezchat.managers.ConfigManager;
@@ -95,6 +97,7 @@ public final class EzChat extends JavaPlugin {
     private EzChatMuteInfoCommand ezChatMuteInfoCommand;
     private AdvertisingCheckService advertisingCheckService;
     private ProfanityCheckService profanityCheckService;
+    private FloodCheckService floodCheckService;
     private StaffAlertService staffAlertService;
     private StaffChatService staffChatService;
     private StaffAlertSubcommand staffAlertSubcommand;
@@ -114,6 +117,7 @@ public final class EzChat extends JavaPlugin {
         saveResource("logs.yml", false);
         saveResource("discord.yml", false);
         saveResource("anti-spam.yml", false);
+        saveResource("anti-flood.yml", false);
         saveResource("profanity.yml", false);
         saveResource("blocked-words.yml", false);
         saveResource("staff.yml", false);
@@ -148,6 +152,7 @@ public final class EzChat extends JavaPlugin {
         this.staffAlertService = new StaffAlertService(this, configManager.getStaffConfig(), communicationLogService, auditLogService);
         this.advertisingCheckService = new AdvertisingCheckService(this, configManager.getAntiSpamConfig(), auditLogService, discordNotificationService, this.staffAlertService);
         this.profanityCheckService = new ProfanityCheckService(this, configManager.getProfanityConfig(), configManager.getBlockedWordsConfig(), auditLogService, discordNotificationService);
+        this.floodCheckService = new FloodCheckService(this, configManager.getAntiFloodConfig(), auditLogService, discordNotificationService);
 
         this.chatToggleManager = new ChatToggleManager(this, toggleRepository);
         this.chatToggleManager.load();
@@ -171,8 +176,9 @@ public final class EzChat extends JavaPlugin {
         final SpyService spyService = new SpyService(this, this.configManager.getStaffConfig(), this.chatToggleManager);
 
         registerPlaceholderExpansion();
+        initializeMetrics();
 
-        getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.featureManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, this.staffChatService), this);
+        getServer().getPluginManager().registerEvents(new PaperChatListener(this, this.featureManager, this.chatToggleManager, this.ignoreManager, this.floodgateHook, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, this.staffChatService, this.floodCheckService), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinListener(this, this.featureManager, this.mailManager), this);
         getServer().getPluginManager().registerEvents(new DeathMessageListener(deathMessageService), this);
         getServer().getPluginManager().registerEvents(new JoinLeaveMessageListener(joinLeaveService), this);
@@ -184,13 +190,13 @@ public final class EzChat extends JavaPlugin {
         }
 
         if (getCommand("msg") != null) {
-            getCommand("msg").setExecutor(new MessageCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, spyService));
+            getCommand("msg").setExecutor(new MessageCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, spyService, this.floodCheckService));
         } else {
             getLogger().warning("[EzChat] Failed to register /msg command.");
         }
 
         if (getCommand("reply") != null) {
-            getCommand("reply").setExecutor(new ReplyCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, spyService));
+            getCommand("reply").setExecutor(new ReplyCommand(this, this.featureManager, this.messageManager, this.chatToggleManager, this.ignoreManager, communicationLogService, muteService, discordNotificationService, this.advertisingCheckService, this.profanityCheckService, spyService, this.floodCheckService));
         } else {
             getLogger().warning("[EzChat] Failed to register /reply command.");
         }
@@ -262,13 +268,13 @@ public final class EzChat extends JavaPlugin {
         }
 
         if (getCommand("staffchat") != null) {
-            getCommand("staffchat").setExecutor(new StaffChatCommand(this, this.configManager.getStaffConfig(), this.staffChatService, this.profanityCheckService));
+            getCommand("staffchat").setExecutor(new StaffChatCommand(this, this.configManager.getStaffConfig(), this.staffChatService, this.profanityCheckService, this.floodCheckService));
         } else {
             getLogger().warning("[EzChat] Failed to register /staffchat command.");
         }
 
         if (getCommand("sc") != null) {
-            getCommand("sc").setExecutor(new StaffChatCommand(this, this.configManager.getStaffConfig(), this.staffChatService, this.profanityCheckService));
+            getCommand("sc").setExecutor(new StaffChatCommand(this, this.configManager.getStaffConfig(), this.staffChatService, this.profanityCheckService, this.floodCheckService));
         } else {
             getLogger().warning("[EzChat] Failed to register /sc command.");
         }
@@ -350,6 +356,9 @@ public final class EzChat extends JavaPlugin {
             if (profanityCheckService != null) {
                 profanityCheckService.reload();
             }
+            if (floodCheckService != null) {
+                floodCheckService.reload();
+            }
             registerPlaceholderExpansion();
             sender.sendMessage(colorize("&aEzChat has been reloaded."));
             return true;
@@ -430,6 +439,14 @@ public final class EzChat extends JavaPlugin {
                     .collect(Collectors.toList());
         }
         return new ArrayList<>();
+    }
+
+    private void initializeMetrics() {
+        try {
+            EzChatMetrics.initialize(this, this.configManager);
+        } catch (final Throwable exception) {
+            getLogger().warning("[EzChat] Failed to initialize bStats metrics: " + exception.getMessage());
+        }
     }
 
     private void registerPlaceholderExpansion() {

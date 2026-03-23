@@ -7,13 +7,15 @@ import com.ezinnovations.ezchat.managers.IgnoreManager;
 import com.ezinnovations.ezchat.managers.MessageManager;
 import com.ezinnovations.ezchat.moderation.AdvertisingCheckService;
 import com.ezinnovations.ezchat.moderation.AdvertisingDetectionResult;
+import com.ezinnovations.ezchat.moderation.FloodChannel;
+import com.ezinnovations.ezchat.moderation.FloodCheckService;
+import com.ezinnovations.ezchat.moderation.FloodDetectionResult;
 import com.ezinnovations.ezchat.moderation.ProfanityCheckService;
 import com.ezinnovations.ezchat.moderation.ProfanityDetectionResult;
 import com.ezinnovations.ezchat.service.CommunicationLogService;
 import com.ezinnovations.ezchat.service.DiscordNotificationService;
 import com.ezinnovations.ezchat.service.MuteService;
 import com.ezinnovations.ezchat.service.SpyService;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -36,6 +38,7 @@ public final class ReplyCommand implements CommandExecutor {
     private final AdvertisingCheckService advertisingCheckService;
     private final ProfanityCheckService profanityCheckService;
     private final SpyService spyService;
+    private final FloodCheckService floodCheckService;
 
     public ReplyCommand(final EzChat plugin,
                         final FeatureManager featureManager,
@@ -47,7 +50,8 @@ public final class ReplyCommand implements CommandExecutor {
                         final DiscordNotificationService discordNotificationService,
                         final AdvertisingCheckService advertisingCheckService,
                         final ProfanityCheckService profanityCheckService,
-                        final SpyService spyService) {
+                        final SpyService spyService,
+                        final FloodCheckService floodCheckService) {
         this.plugin = plugin;
         this.featureManager = featureManager;
         this.messageManager = messageManager;
@@ -59,6 +63,7 @@ public final class ReplyCommand implements CommandExecutor {
         this.advertisingCheckService = advertisingCheckService;
         this.profanityCheckService = profanityCheckService;
         this.spyService = spyService;
+        this.floodCheckService = floodCheckService;
     }
 
     @Override
@@ -116,18 +121,28 @@ public final class ReplyCommand implements CommandExecutor {
         }
 
         final String message = Arrays.stream(args).collect(Collectors.joining(" "));
+
+        if (floodCheckService.shouldCheckPrivateMessages() && !floodCheckService.shouldBypass(player)) {
+            final FloodDetectionResult detectionResult = floodCheckService.checkFlood(player.getUniqueId(), message, FloodChannel.MSG);
+            if (floodCheckService.handleBlockedMessage(player, FloodChannel.MSG, detectionResult, message)) {
+                return true;
+            }
+        }
+
         if (advertisingCheckService.shouldScanPrivateMessages() && !advertisingCheckService.shouldBypass(player)) {
             final AdvertisingDetectionResult detectionResult = advertisingCheckService.checkAdvertising(message);
             if (advertisingCheckService.handleBlockedMessage(player, AdvertisingCheckService.CommunicationType.MSG, detectionResult, message)) {
                 return true;
             }
         }
+
         if (profanityCheckService.shouldScanPrivateMessages() && !profanityCheckService.shouldBypass(player)) {
             final ProfanityDetectionResult detectionResult = profanityCheckService.checkProfanity(message);
             if (profanityCheckService.handleBlockedMessage(player, ProfanityCheckService.CommunicationType.MSG, detectionResult, message)) {
                 return true;
             }
         }
+
         final String sentFormat = plugin.getConfigManager().getPrivateMessageConfig().getString("formats.sent-format", "&8[&aTo {receiver}&8] &f{message}");
         final String receivedFormat = plugin.getConfigManager().getPrivateMessageConfig().getString("formats.received-format", "&8[&6From {sender}&8] &f{message}");
 
