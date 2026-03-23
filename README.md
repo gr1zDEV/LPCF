@@ -1,176 +1,199 @@
 # EzChat
 
-> A LuckPerms-powered communication suite for **Paper/Folia 1.21+** with chat formatting, private messaging, mail, moderation, logging, staff tools, and per-player visibility toggles.
+> A production-ready communication suite for **Paper/Folia 1.21+** that combines modern chat formatting, direct messaging, offline mail, moderation, audit logging, staff workflows, and optional Discord webhooks in one plugin.
 
-EzChat is no longer just a chat formatter. The current plugin build includes:
+EzChat is built for servers that want a single, cohesive communication stack instead of a patchwork of small plugins. It uses **LuckPerms** for metadata-driven formatting, stores persistent player state in **SQLite**, supports **PlaceholderAPI** expansions, and includes the day-to-day controls staff teams expect for live operations.
 
-- Public chat formatting with LuckPerms metadata and PlaceholderAPI support.
-- Private messages, replies, ignore controls, and persistent mail.
-- Moderation tools such as mutes, anti-advertising, and profanity filtering.
-- Staff chat, staff alerts, social spy, and mail spy.
-- Server broadcasts plus player-controlled toggles for chat, mail, death, join/leave, and server messages.
-- SQLite-backed persistence for toggles, ignores, mail, communication logs, audit logs, and mutes.
-- Optional Discord webhook routing for multiple event types.
+---
+
+## Why EzChat
+
+- **One plugin, broad coverage**: public chat, direct messages, offline mail, ignore controls, moderation, staff chat, alerts, logging, and message visibility toggles.
+- **Operationally safe**: persistent storage for mutes, toggles, ignores, mail, and communication history.
+- **Configurable without code changes**: dedicated YAML files for each major subsystem.
+- **Modern server support**: targets **Paper/Folia 1.21** and **Java 21**.
+- **Optional ecosystem integrations**: LuckPerms, PlaceholderAPI, Floodgate/Geyser, and Discord webhooks.
 
 ---
 
 ## Table of Contents
 
 - [Compatibility](#compatibility)
-- [Core Features](#core-features)
+- [Feature Overview](#feature-overview)
+- [Chat Formatting Placeholders](#chat-formatting-placeholders)
+- [PlaceholderAPI Expansion](#placeholderapi-expansion)
 - [Commands](#commands)
 - [Permissions](#permissions)
-- [Feature Toggles](#feature-toggles)
 - [Configuration Files](#configuration-files)
-- [Storage](#storage)
+- [Discord Webhook Events](#discord-webhook-events)
+- [Storage and Persistence](#storage-and-persistence)
 - [Installation](#installation)
 - [Building from Source](#building-from-source)
-- [Notes and Gotchas](#notes-and-gotchas)
+- [Operational Notes](#operational-notes)
+- [Documentation](#documentation)
 
 ---
 
 ## Compatibility
 
-- **Server software:** Paper / Folia
-- **API version:** 1.21
-- **Java:** 21
-- **Required dependency:** LuckPerms
-- **Optional integrations:** PlaceholderAPI, floodgate, Geyser-Spigot
-- **Database:** SQLite
+| Item | Requirement / Support |
+| --- | --- |
+| Server software | Paper / Folia |
+| Minecraft API | 1.21 |
+| Java | 21 |
+| Required dependency | LuckPerms |
+| Optional dependencies | PlaceholderAPI, floodgate, Geyser-Spigot |
+| Persistent storage | SQLite |
 
 ---
 
-## Core Features
+## Feature Overview
 
 ### 1. Public chat formatting
 
-- Uses Paper's modern chat pipeline.
-- Supports a global `chat-format` string.
-- Supports per-group overrides with `group-formats.<primary-group>`.
-- Resolves LuckPerms metadata placeholders:
-  - `{prefix}` / `{suffix}`
-  - `{prefixes}` / `{suffixes}`
-  - `{username-color}` / `{message-color}`
-- Also supports:
-  - `{message}`
-  - `{name}`
-  - `{displayname}`
-  - `{world}`
-- PlaceholderAPI placeholders are resolved when PlaceholderAPI is installed.
-- Legacy `&` colors and hex colors are handled according to permissions.
+EzChat formats chat through Paper's modern chat pipeline and resolves **LuckPerms metadata**, built-in chat variables, and optional PlaceholderAPI placeholders.
 
-### 2. Player chat color permissions
+Highlights:
 
-- `ezchat.colorcodes` allows legacy codes like `&a` and `&l`.
-- `ezchat.rgbcodes` allows hex input like `&#12abef` and Bukkit-style `&x&1&2...`.
-- Behavior by permission combination:
-  - both permissions: legacy + hex allowed
-  - only `ezchat.colorcodes`: legacy allowed, hex removed
-  - only `ezchat.rgbcodes`: hex allowed, legacy removed
-  - neither: all formatting codes stripped
+- Global `chat-format` plus per-group overrides via `group-formats.<group>`.
+- LuckPerms-aware formatting for prefixes, suffixes, and metadata colors.
+- Permission-aware player color support for both legacy and RGB color input.
+- Optional PlaceholderAPI resolution inside chat formats when PlaceholderAPI is installed.
+- Staff chat mode interception so staff can speak privately without changing commands.
 
-### 3. Private messaging
+### 2. Player formatting permissions
 
-- `/msg <player> <message>` sends direct messages.
-- `/reply <message>` replies to the most recent DM target.
-- `/togglemsg [on|off]` lets players opt in or out of DMs.
-- Messages can be blocked by mute state, ignore state, anti-advertising, or profanity rules.
-- Private message activity can be mirrored to Discord and to social spy when enabled.
+EzChat gives you granular control over message styling:
 
-### 4. Ignore system
+- `ezchat.colorcodes` allows legacy codes such as `&a`, `&l`, and `&7`.
+- `ezchat.rgbcodes` allows hex input such as `&#12abef` and Bukkit-style `&x&1&2&a&b&e&f`.
 
-- `/ignore <player> <ALL|CHAT|MSG|MAIL>` toggles ignore entries.
-- `/ignorelist` shows your current ignore entries.
-- `/unignore <player> <ALL|CHAT|MSG|MAIL|ALL_TYPES>` removes a specific ignore rule.
-- Ignore rules can independently affect public chat, private messages, and mail.
+Behavior matrix:
 
-### 5. Persistent mail
+| Permission set | Result |
+| --- | --- |
+| `ezchat.colorcodes` + `ezchat.rgbcodes` | Legacy and hex colors are allowed |
+| `ezchat.colorcodes` only | Legacy colors stay, hex codes are stripped |
+| `ezchat.rgbcodes` only | Hex colors stay, legacy codes are stripped |
+| Neither | Formatting codes are removed |
 
-- `/mail <player> <message>` sends offline-safe mail.
-- Inbox browsing is built in:
-  - `/mail inbox [page]`
-  - `/mail unread [page]`
-  - `/mail received <player> [page]`
-  - `/mail sent [page]`
-  - `/mail sent <player> [page]`
-  - `/mail read <id>`
-  - `/mail delete <id>`
-- Players can disable incoming mail with `/togglemail [on|off]`.
-- Optional unread mail login notifications are supported.
-- Mail can be monitored with mail spy for staff.
+### 3. Direct messaging
 
-### 6. Moderation and safety
+Private messaging is built in and backed by moderation and visibility controls.
 
-#### Mutes
+- `/msg <player> <message>` for direct messages.
+- `/reply <message>` to answer the latest DM target.
+- `/togglemsg [on|off]` so players can opt out of DMs.
+- Messages can be blocked by mute state, ignore state, advertising checks, and profanity checks.
+- Social spy can mirror PM activity to authorized staff.
+- Direct messages can be routed to Discord webhooks when enabled.
 
-- `/ezchat mute <player> <reason...>` sets a permanent mute.
-- `/ezchat mutetemp <player> <duration> <reason...>` sets a temporary mute.
-- `/ezchat unmute <player> [reason]` removes a mute.
-- `/ezchat muteinfo <player>` shows current mute details.
-- Muted players can be blocked from:
-  - public chat
-  - private messages
-  - mail
+### 4. Ignore controls
+
+Players can independently block communication from specific users.
+
+- Ignore scopes: `ALL`, `CHAT`, `MSG`, and `MAIL`.
+- `/ignorelist` shows active ignore rules.
+- `/unignore` removes specific rules, including `ALL_TYPES` cleanup.
+- Ignore logic is persisted, so settings survive restarts.
+
+### 5. Persistent offline mail
+
+EzChat includes a mailbox system for asynchronous communication.
+
+- `/mail <player> <message>` sends mail even when the target is offline.
+- Inbox and history views for received, unread, and sent mail.
+- Read and delete workflows for individual mail entries.
+- Optional unread-mail login notifications.
+- Mail spy support for staff oversight.
+- Bedrock-aware behavior for players where Java-only interactive chat patterns are not suitable.
+
+### 6. Moderation and communication safety
+
+#### Mute system
+
+The mute system supports both permanent and temporary actions.
+
+- Permanent mute: `/ezchat mute <player> <reason...>`
+- Temporary mute: `/ezchat mutetemp <player> <duration> <reason...>`
+- Unmute: `/ezchat unmute <player> [reason]`
+- Inspection: `/ezchat muteinfo <player>`
+
+Mutes can independently block:
+
+- public chat
+- private messages
+- mail
 
 #### Anti-advertising
 
-- Separate config file for advertising checks.
-- Can scan:
-  - public chat
-  - private messages
-  - mail
-- Can block:
-  - IPv4 addresses
-  - domains
-  - Discord invites
-  - custom patterns
-- Includes whitelist support and bypass permission.
+Advertising detection is configurable per channel.
 
-#### Profanity filter
+- Channel coverage: public chat, private messages, and optional mail scanning.
+- Pattern coverage: IPv4 addresses, domains, Discord invites, and custom expressions.
+- Domain and exact-value whitelist support.
+- Configurable staff/audit/Discord actions.
+- Bypass permission: `ezchat.bypass.advertising`
 
-- Separate config file for profanity checks.
-- Can scan:
-  - public chat
-  - private messages
-  - mail
-  - optionally staff chat
-- Supports blocked words and regex patterns.
-- Includes bypass permission.
+#### Profanity filtering
+
+Profanity filtering is separated into its own feature set.
+
+- Channel coverage: public chat, private messages, mail, and optional staff chat.
+- Supports both blocked-word lists and regex patterns.
+- Configurable sender notification, audit logging, and Discord logging.
+- Bypass permission: `ezchat.bypass.profanity`
 
 ### 7. Logging and audit trail
 
-- Communication logging supports:
-  - public chat
-  - private messages
-  - mail
-- Audit logging tracks administrative and toggle actions.
-- `/ezchat logs` supports these modes:
-  - `/ezchat logs player <player> [page]`
-  - `/ezchat logs between <player1> <player2> [page]`
-  - `/ezchat logs public <player> [page]`
-  - `/ezchat logs msg <player> [page]`
-  - `/ezchat logs mail <player> [page]`
-  - `/ezchat logs search <keyword> [page]`
+EzChat is designed for moderation review as well as live operations.
 
-### 8. Staff tools
+Communication logging can store:
 
-- `/staffchat <message>` and `/sc <message>` send staff chat messages.
-- `/togglestaffchat` enables staff chat mode for normal chat input.
-- `/ezchat staffalert <message>` sends a staff alert.
-- `/togglesocialspy` toggles live spying for private messages.
-- `/togglemailspy` toggles live spying for mail.
+- public chat
+- private messages
+- mail
+
+Audit logging can track:
+
+- moderation actions
+- toggle changes
+- staff/system actions emitted by EzChat features
+
+Log review subcommands include:
+
+- `/ezchat logs player <player> [page]`
+- `/ezchat logs between <player1> <player2> [page]`
+- `/ezchat logs public <player> [page]`
+- `/ezchat logs msg <player> [page]`
+- `/ezchat logs mail <player> [page]`
+- `/ezchat logs search <keyword> [page]`
+
+### 8. Staff communication tools
+
+EzChat includes dedicated tools for internal staff communication.
+
+- `/staffchat <message>` and `/sc <message>` for staff-only chat.
+- `/togglestaffchat` to route normal chat into staff chat mode.
+- `/ezchat staffalert <message>` to send staff alerts.
+- `/togglesocialspy` for PM monitoring.
+- `/togglemailspy` for mail monitoring.
 
 ### 9. Server, death, and join/leave messaging
 
-- `/ezchat broadcast <message>` sends a configurable server broadcast.
-- `/toggleservermsg [on|off]` toggles receipt of server broadcasts.
-- `/toggledeathmsg [on|off]` toggles death messages.
-- `/togglejoinleavemsg [on|off]` toggles join/leave messages.
-- Death messages and join/leave messages support custom formatting, optional sounds, and optional logging.
+Server-wide and event-driven messaging can be customized and individually hidden by players.
+
+- `/ezchat broadcast <message>` for server broadcasts.
+- `/toggleservermsg [on|off]` to hide broadcasts.
+- `/toggledeathmsg [on|off]` to hide death messages.
+- `/togglejoinleavemsg [on|off]` to hide join/leave messages.
+- Configurable formatting, optional sound playback, toggle persistence, and optional logging.
 
 ### 10. Discord webhook integration
 
-Discord webhook support is optional and configurable per event type. Current event routing includes:
+Discord routing is optional and can be enabled globally or per event type.
+
+Available webhook channels include:
 
 - public chat
 - private messages
@@ -182,71 +205,157 @@ Discord webhook support is optional and configurable per event type. Current eve
 - join messages
 - leave messages
 
-Webhook identity, avatar handling, embed usage, and per-event formatting are configurable in `discord.yml`.
+Webhook behavior supports:
 
-### 11. Persistence and Bedrock awareness
+- per-event webhook URLs with default fallback
+- embed or plain content delivery
+- configurable display name strategy
+- configurable avatar strategy
+- event-specific message formats
 
-- Toggle states, ignores, mail, logs, and mutes are persisted in SQLite.
-- Floodgate is auto-detected when present.
-- Bedrock players receive safe fallback behavior where clickable Java chat interactions are not appropriate.
+### 11. Persistent player settings
+
+EzChat stores critical communication state in SQLite so server restarts do not wipe player preferences or moderation records.
+
+Persisted data includes:
+
+- chat/mail/visibility toggles
+- staff mode and spy toggles
+- ignore rules
+- mail entries
+- communication logs
+- audit logs
+- mute history and active mutes
+
+---
+
+## Chat Formatting Placeholders
+
+The main chat format in `config.yml` supports the following placeholders:
+
+| Placeholder | Description |
+| --- | --- |
+| `{message}` | The player's chat message |
+| `{name}` | The player's Minecraft username |
+| `{displayname}` | The player's display name |
+| `{world}` | The player's current world |
+| `{prefix}` | Highest-priority LuckPerms prefix |
+| `{suffix}` | Highest-priority LuckPerms suffix |
+| `{prefixes}` | All LuckPerms prefixes ordered by weight |
+| `{suffixes}` | All LuckPerms suffixes ordered by weight |
+| `{username-color}` | LuckPerms metadata value for username color |
+| `{message-color}` | LuckPerms metadata value for message color |
+
+Example formats:
+
+```yaml
+chat-format: "{prefix}{name}&r: {message}"
+chat-format: "[{world}] {prefix}{name}&r: {message}"
+chat-format: "{prefix}{username-color}{name}&r: {message-color}{message}"
+```
+
+Additional template support:
+
+- `join-leave.yml` join/leave formats support `{player}`, `{displayname}`, and `{message}`.
+- Discord event templates support event-specific placeholders such as `{sender}`, `{receiver}`, `{target}`, `{actor}`, `{duration}`, and `{message}` depending on the event type.
+
+---
+
+## PlaceholderAPI Expansion
+
+If **PlaceholderAPI** is installed and EzChat placeholders are enabled in `placeholders.yml`, EzChat registers the `ezchat` expansion for player communication settings.
+
+### Available EzChat placeholders
+
+| Placeholder | Returns |
+| --- | --- |
+| `%ezchat_togglechat%` | Chat visibility state |
+| `%ezchat_togglemsg%` | Private-message toggle state |
+| `%ezchat_togglemail%` | Mail toggle state |
+| `%ezchat_toggleservermsg%` | Server-message visibility state |
+| `%ezchat_toggledeathmsg%` | Death-message visibility state |
+| `%ezchat_togglejoinleavemsg%` | Join/leave-message visibility state |
+| `%ezchat_togglestaffchat%` | Staff chat mode state |
+| `%ezchat_togglesocialspy%` | Social spy state |
+| `%ezchat_togglemailspy%` | Mail spy state |
+
+### Formatted variants
+
+Append `_formatted` to any placeholder to use the configured on/off text from `placeholders.yml`.
+
+Examples:
+
+- `%ezchat_togglechat%`
+- `%ezchat_togglechat_formatted%`
+- `%ezchat_togglemsg_formatted%`
+- `%ezchat_togglesocialspy_formatted%`
+
+### Output mode
+
+`placeholders.yml` controls raw output mode:
+
+- `true-false` → raw placeholders return `true` / `false`
+- `on-off` → raw placeholders return `on` / `off`
+
+Formatted output uses the configured `true-text` and `false-text` values.
 
 ---
 
 ## Commands
 
-### Main `/ezchat` subcommands
+### `/ezchat` subcommands
 
 | Command | Description |
 | --- | --- |
-| `/ezchat reload` | Reloads config and feature state. |
-| `/ezchat clear` | Clears chat and broadcasts the configured clear message. |
-| `/ezchat debug <player>` | Shows resolved LuckPerms metadata, group format source, PAPI status, and chat color permissions. |
-| `/ezchat logs player <player> [page]` | Shows all logged communication for a player. |
-| `/ezchat logs between <player1> <player2> [page]` | Shows communication between two players. |
-| `/ezchat logs public <player> [page]` | Shows public chat entries for a player. |
-| `/ezchat logs msg <player> [page]` | Shows private message entries for a player. |
-| `/ezchat logs mail <player> [page]` | Shows mail entries for a player. |
-| `/ezchat logs search <keyword> [page]` | Searches communication logs by keyword. |
-| `/ezchat mute <player> <reason...>` | Permanently mutes a player. |
-| `/ezchat mutetemp <player> <duration> <reason...>` | Temporarily mutes a player. |
-| `/ezchat unmute <player> [reason]` | Removes a mute. |
-| `/ezchat muteinfo <player>` | Displays active mute details. |
-| `/ezchat staffalert <message>` | Sends a staff alert. |
-| `/ezchat broadcast <message>` | Sends a server broadcast. |
+| `/ezchat reload` | Reloads EzChat configuration and feature state. |
+| `/ezchat clear` | Clears visible chat and broadcasts the configured clear message. |
+| `/ezchat debug <player>` | Shows LuckPerms metadata, format source, PlaceholderAPI hook status, and color permissions for a player. |
+| `/ezchat logs player <player> [page]` | View all communication logs involving a player. |
+| `/ezchat logs between <player1> <player2> [page]` | View logs between two players. |
+| `/ezchat logs public <player> [page]` | View public chat logs for a player. |
+| `/ezchat logs msg <player> [page]` | View private-message logs for a player. |
+| `/ezchat logs mail <player> [page]` | View mail logs for a player. |
+| `/ezchat logs search <keyword> [page]` | Search communication logs by keyword. |
+| `/ezchat mute <player> <reason...>` | Permanently mute a player. |
+| `/ezchat mutetemp <player> <duration> <reason...>` | Temporarily mute a player. |
+| `/ezchat unmute <player> [reason]` | Remove an active mute. |
+| `/ezchat muteinfo <player>` | Inspect a player's mute status. |
+| `/ezchat staffalert <message>` | Send a staff alert. |
+| `/ezchat broadcast <message>` | Broadcast a server message. |
 
 ### Player communication commands
 
 | Command | Description |
 | --- | --- |
-| `/togglechat [on|off]` | Show or hide public chat for yourself. |
+| `/togglechat [on|off]` | Toggle public chat visibility for yourself. |
 | `/msg <player> <message>` | Send a private message. |
-| `/reply <message>` | Reply to your last DM target. |
+| `/reply <message>` | Reply to your most recent DM target. |
 | `/togglemsg [on|off]` | Enable or disable private messages. |
-| `/ignore <player> <ALL|CHAT|MSG|MAIL>` | Toggle an ignore entry. |
-| `/ignorelist` | View your ignore entries. |
-| `/unignore <player> <ALL|CHAT|MSG|MAIL|ALL_TYPES>` | Remove a specific ignore entry. |
-| `/mail <player> <message>` | Send persistent mail. |
+| `/ignore <player> <ALL\|CHAT\|MSG\|MAIL>` | Add or toggle an ignore rule. |
+| `/ignorelist` | View your active ignore rules. |
+| `/unignore <player> <ALL\|CHAT\|MSG\|MAIL\|ALL_TYPES>` | Remove an ignore rule. |
+| `/mail <player> <message>` | Send persistent mail to a player. |
 | `/mail inbox [page]` | View your inbox. |
 | `/mail unread [page]` | View unread mail. |
-| `/mail received <player> [page]` | View received mail from one player. |
+| `/mail received <player> [page]` | View mail received from a specific player. |
 | `/mail sent [page]` | List players you have sent mail to. |
-| `/mail sent <player> [page]` | View mail you sent to a player. |
-| `/mail read <id>` | Read a mail entry in full. |
+| `/mail sent <player> [page]` | View mail you have sent to a specific player. |
+| `/mail read <id>` | Open a single mail entry. |
 | `/mail delete <id>` | Delete a mail entry from your inbox. |
-| `/togglemail [on|off]` | Enable or disable mail delivery. |
+| `/togglemail [on|off]` | Enable or disable incoming mail. |
 
-### Staff visibility and utility commands
+### Staff utility commands
 
 | Command | Description |
 | --- | --- |
-| `/togglesocialspy` | Toggle live private-message spy. |
-| `/togglemailspy` | Toggle live mail spy. |
-| `/toggleservermsg [on|off]` | Toggle server broadcast visibility. |
-| `/toggledeathmsg [on|off]` | Toggle death message visibility. |
-| `/togglejoinleavemsg [on|off]` | Toggle join/leave message visibility. |
-| `/staffchat <message>` | Send a staff chat message. |
+| `/staffchat <message>` | Send a staff-chat message. |
 | `/sc <message>` | Alias for `/staffchat`. |
-| `/togglestaffchat` | Toggle staff chat mode. |
+| `/togglestaffchat` | Toggle staff-chat mode for normal chat input. |
+| `/togglesocialspy` | Toggle private-message spy mode. |
+| `/togglemailspy` | Toggle mail spy mode. |
+| `/toggleservermsg [on|off]` | Toggle receipt of server broadcasts. |
+| `/toggledeathmsg [on|off]` | Toggle receipt of death messages. |
+| `/togglejoinleavemsg [on|off]` | Toggle receipt of join/leave messages. |
 
 ---
 
@@ -260,38 +369,38 @@ Webhook identity, avatar handling, embed usage, and per-event formatting are con
 | `ezchat.msg` | `true` | Use `/msg`. |
 | `ezchat.reply` | `true` | Use `/reply`. |
 | `ezchat.togglemsg` | `true` | Use `/togglemsg`. |
-| `ezchat.ignore` | `true` | Use `/ignore`, `/ignorelist`, and `/unignore`. |
-| `ezchat.mail` | `true` | Use `/mail`. |
-| `ezchat.mail.inbox` | `true` | View inbox-style mail pages. |
-| `ezchat.mail.sent` | `true` | Use `/mail sent ...`. |
-| `ezchat.mail.received` | `true` | Use `/mail received ...`. |
-| `ezchat.mail.unread` | `true` | Use `/mail unread`. |
-| `ezchat.mail.read` | `true` | Use `/mail read <id>`. |
-| `ezchat.mail.delete` | `true` | Use `/mail delete <id>`. |
+| `ezchat.ignore` | `true` | Use ignore commands. |
+| `ezchat.mail` | `true` | Send mail with `/mail`. |
+| `ezchat.mail.inbox` | `true` | View `/mail inbox`. |
+| `ezchat.mail.sent` | `true` | View `/mail sent`. |
+| `ezchat.mail.received` | `true` | View `/mail received`. |
+| `ezchat.mail.unread` | `true` | View `/mail unread`. |
+| `ezchat.mail.read` | `true` | Use `/mail read`. |
+| `ezchat.mail.delete` | `true` | Use `/mail delete`. |
 | `ezchat.togglemail` | `true` | Use `/togglemail`. |
 | `ezchat.servermsg.toggle` | `true` | Use `/toggleservermsg`. |
 | `ezchat.deathmsg.toggle` | `true` | Use `/toggledeathmsg`. |
 | `ezchat.joinleavemsg.toggle` | `true` | Use `/togglejoinleavemsg`. |
-| `ezchat.colorcodes` | `false` | Allow legacy color/style codes in chat input. |
-| `ezchat.rgbcodes` | `false` | Allow hex color codes in chat input. |
+| `ezchat.colorcodes` | `false` | Use legacy chat color codes. |
+| `ezchat.rgbcodes` | `false` | Use RGB / hex chat colors. |
 
-### Staff and admin permissions
+### Staff and administrative permissions
 
 | Permission | Default | Description |
 | --- | --- | --- |
 | `ezchat.reload` | `op` | Use `/ezchat reload`. |
 | `ezchat.clearchat` | `op` | Use `/ezchat clear`. |
-| `ezchat.debug` | `op` | Use `/ezchat debug <player>`. |
+| `ezchat.debug` | `op` | Use `/ezchat debug`. |
 | `ezchat.logs` | `op` | Use `/ezchat logs ...`. |
 | `ezchat.mute` | `op` | Use `/ezchat mute`. |
 | `ezchat.mutetemp` | `op` | Use `/ezchat mutetemp`. |
 | `ezchat.unmute` | `op` | Use `/ezchat unmute`. |
 | `ezchat.muteinfo` | `op` | Use `/ezchat muteinfo`. |
-| `ezchat.socialspy` | `op` | Use `/togglesocialspy` and receive PM spy output. |
-| `ezchat.mailspy` | `op` | Use `/togglemailspy` and receive mail spy output. |
 | `ezchat.broadcast` | `op` | Use `/ezchat broadcast` as a player. |
 | `ezchat.staffchat` | `op` | Send and receive staff chat. |
 | `ezchat.staffchat.toggle` | `op` | Use `/togglestaffchat`. |
+| `ezchat.socialspy` | `op` | Use `/togglesocialspy` and receive PM spy. |
+| `ezchat.mailspy` | `op` | Use `/togglemailspy` and receive mail spy. |
 | `ezchat.staffalerts` | `op` | Receive staff alerts. |
 | `ezchat.staffalerts.send` | `op` | Send `/ezchat staffalert` as a player. |
 
@@ -304,213 +413,130 @@ Webhook identity, avatar handling, embed usage, and per-event formatting are con
 
 ---
 
-## Feature Toggles
-
-These are the main enable/disable switches shipped in the current config set.
-
-### `config.yml`
-
-| Path | Default | Effect |
-| --- | --- | --- |
-| `features.public-chat.enabled` | `true` | Enables formatted public chat handling. |
-| `features.chat-toggle.enabled` | `true` | Enables `/togglechat`. |
-| `features.private-messages.enabled` | `true` | Enables `/msg` and `/reply`. |
-| `features.private-message-toggle.enabled` | `true` | Enables `/togglemsg`. |
-| `features.ignore.enabled` | `true` | Enables ignore checks and commands. |
-| `features.mail.enabled` | `true` | Enables the mail system. |
-| `features.mail-toggle.enabled` | `true` | Enables `/togglemail`. |
-
-### `mail.yml`
-
-| Path | Default | Effect |
-| --- | --- | --- |
-| `settings.unread-login-notify.enabled` | `true` | Sends unread mail notifications on login. |
-
-### `logs.yml`
-
-| Path | Default | Effect |
-| --- | --- | --- |
-| `features.enabled` | `true` | Enables communication/audit logging features. |
-| `settings.logging-enabled` | `true` | Enables writing log data. |
-| `settings.public-chat` | `true` | Log public chat. |
-| `settings.private-messages` | `true` | Log private messages. |
-| `settings.mail` | `true` | Log mail. |
-| `settings.audit` | `true` | Log audit actions. |
-
-### `mute.yml`
-
-| Path | Default | Effect |
-| --- | --- | --- |
-| `features.enabled` | `true` | Enables mute commands and mute enforcement. |
-| `settings.block-public-chat` | `true` | Prevent muted players from public chat. |
-| `settings.block-private-messages` | `true` | Prevent muted players from private messaging. |
-| `settings.block-mail` | `true` | Prevent muted players from using mail. |
-
-### `anti-spam.yml`
-
-| Path | Default | Effect |
-| --- | --- | --- |
-| `features.enabled` | `true` | Enables anti-advertising support. |
-| `features.anti-advertising.enabled` | `true` | Enables the advertising detector. |
-| `checks.public-chat` | `true` | Scan public chat. |
-| `checks.private-messages` | `true` | Scan private messages. |
-| `checks.mail` | `false` | Scan mail. |
-| `patterns.block-ipv4` | `true` | Block IPv4 addresses. |
-| `patterns.block-domains` | `true` | Block domains. |
-| `patterns.block-discord-invites` | `true` | Block Discord invites. |
-| `actions.block-message` | `true` | Cancel blocked messages. |
-| `actions.notify-sender` | `true` | Notify the sender when blocked. |
-| `actions.audit-log` | `true` | Write audit logs for blocks. |
-| `actions.discord-log` | `false` | Forward blocked events to Discord. |
-
-### `profanity.yml`
-
-| Path | Default | Effect |
-| --- | --- | --- |
-| `features.enabled` | `true` | Enables profanity filtering. |
-| `checks.public-chat` | `true` | Scan public chat. |
-| `checks.private-messages` | `true` | Scan private messages. |
-| `checks.mail` | `true` | Scan mail. |
-| `checks.staff-chat` | `false` | Scan staff chat. |
-| `actions.block-message` | `true` | Cancel blocked messages. |
-| `actions.notify-sender` | `true` | Notify the sender when blocked. |
-| `actions.audit-log` | `true` | Write audit logs for blocks. |
-| `actions.discord-log` | `false` | Forward blocked events to Discord. |
-| `word-list.enabled` | `true` | Use blocked words list. |
-| `regex.enabled` | `true` | Use regex patterns. |
-
-### `discord.yml`
-
-| Path | Default | Effect |
-| --- | --- | --- |
-| `features.enabled` | `false` | Enables Discord webhook support. |
-| `webhook.use-embeds` | `true` | Uses embed payloads when supported. |
-| `events.public-chat` | `true` | Route public chat events. |
-| `events.private-messages` | `false` | Route private messages. |
-| `events.mail` | `false` | Route mail. |
-| `events.mute-actions` | `true` | Route mute actions. |
-| `events.audit-actions` | `true` | Route audit actions. |
-| `events.server-broadcasts` | `false` | Route broadcasts. |
-| `events.death-messages` | `false` | Route death messages. |
-| `events.join-messages` | `false` | Route joins. |
-| `events.leave-messages` | `false` | Route leaves. |
-
-### `server-message.yml`
-
-| Path | Default | Effect |
-| --- | --- | --- |
-| `features.enabled` | `true` | Enables server broadcast messaging. |
-| `settings.log-broadcasts` | `true` | Logs broadcasts. |
-| `settings.log-toggle-actions` | `true` | Logs broadcast toggle actions. |
-
-### `death-message.yml`
-
-| Path | Default | Effect |
-| --- | --- | --- |
-| `features.enabled` | `true` | Enables custom death message handling. |
-| `settings.log-death-messages` | `true` | Logs death messages. |
-| `settings.use-vanilla-death-message` | `true` | Reuses vanilla death text before formatting. |
-| `settings.default-enabled` | `true` | New players receive death messages by default. |
-| `sound.enabled` | `true` | Plays the configured death-message sound. |
-
-### `join-leave.yml`
-
-| Path | Default | Effect |
-| --- | --- | --- |
-| `features.enabled` | `true` | Enables join/leave messaging. |
-| `settings.log-join-leave-messages` | `true` | Logs join/leave messages. |
-| `settings.default-enabled` | `true` | New players receive join/leave messages by default. |
-| `settings.use-vanilla-join-message` | `true` | Reuses vanilla join text before formatting. |
-| `settings.use-vanilla-leave-message` | `true` | Reuses vanilla leave text before formatting. |
-| `sounds.join.enabled` | `true` | Plays the configured join sound. |
-| `sounds.leave.enabled` | `false` | Plays the configured leave sound. |
-
-### `staff.yml`
-
-| Path | Default | Effect |
-| --- | --- | --- |
-| `features.staff-chat.enabled` | `true` | Enables staff chat commands and mode. |
-| `features.staff-alerts.enabled` | `true` | Enables staff alerts. |
-| `features.console-staff-alert-command.enabled` | `true` | Allows console staff alert command support. |
-| `settings.log-staff-chat` | `true` | Logs staff chat. |
-| `settings.log-staff-alerts` | `true` | Logs staff alerts. |
-
----
-
 ## Configuration Files
 
-EzChat currently ships with these resource files:
+EzChat splits its configuration into focused files so production changes stay readable and low-risk.
 
 | File | Purpose |
 | --- | --- |
-| `config.yml` | Core public chat, private messaging, ignore, and mail feature flags plus main chat format. |
-| `private-message.yml` | Direct message formats and DM toggle messages. |
-| `mail.yml` | Mail notifications, inbox strings, read/delete messages, and login unread notices. |
-| `logs.yml` | Communication log and audit log settings. |
-| `mute.yml` | Mute enforcement behavior and mute command messages. |
-| `anti-spam.yml` | Anti-advertising checks, patterns, whitelist, and actions. |
-| `profanity.yml` | Profanity scanning rules, word-list behavior, and regex patterns. |
-| `blocked-words.yml` | Blocked word entries for the profanity system. |
-| `staff.yml` | Staff chat, staff alerts, and spy message formats. |
-| `server-message.yml` | Broadcast format, toggle behavior, and broadcast messages. |
-| `death-message.yml` | Death message formatting, logging, and sounds. |
-| `join-leave.yml` | Join/leave formatting, defaults, and sounds. |
-| `discord.yml` | Discord webhook routing, identity, avatar, and format options. |
-| `plugin.yml` | Bukkit command and permission registration metadata. |
+| `config.yml` | Core chat formatting, public chat feature flags, ignore messages, clear-chat behavior, and group format overrides. |
+| `private-message.yml` | Private message formats and PM toggle messaging. |
+| `mail.yml` | Mail behavior, inbox messaging, and unread login notifications. |
+| `logs.yml` | Communication and audit logging settings, page size, and timestamp formatting. |
+| `mute.yml` | Mute feature toggles, channel blocks, and mute command messaging. |
+| `anti-spam.yml` | Advertising detection rules, channel coverage, actions, and whitelist settings. |
+| `profanity.yml` | Profanity checks, regex settings, actions, and channel coverage. |
+| `blocked-words.yml` | Word-list entries used by the profanity system. |
+| `staff.yml` | Staff chat, alerts, social spy, and mail spy formatting/settings. |
+| `server-message.yml` | Broadcast formatting, broadcast logging, and server-message toggles. |
+| `death-message.yml` | Death-message formatting, sounds, logging, and player visibility defaults. |
+| `join-leave.yml` | Join/leave formatting, sounds, logging, and player visibility defaults. |
+| `discord.yml` | Discord webhook routing, identity settings, avatars, event toggles, and templates. |
+| `placeholders.yml` | PlaceholderAPI feature enablement and raw/formatted EzChat placeholder output. |
+
+Recommended production workflow:
+
+1. Start the server once to generate all configuration files.
+2. Stop the server before major bulk edits.
+3. Edit YAML carefully using spaces, not tabs.
+4. Use `/ezchat reload` for normal iterative changes.
+5. Rejoin with a test account and validate formatting, toggles, mail, and moderation behavior.
 
 ---
 
-## Storage
+## Discord Webhook Events
 
-EzChat stores runtime data in SQLite. The current README-relevant storage includes:
+When `discord.yml` enables webhooks, EzChat can send these event types:
+
+| Event key | Default state |
+| --- | --- |
+| `public-chat` | `true` |
+| `private-messages` | `false` |
+| `mail` | `false` |
+| `mute-actions` | `true` |
+| `audit-actions` | `true` |
+| `server-broadcasts` | `false` |
+| `death-messages` | `false` |
+| `join-messages` | `false` |
+| `leave-messages` | `false` |
+
+You can point each event to its own webhook URL or let it fall back to the default webhook.
+
+---
+
+## Storage and Persistence
+
+EzChat initializes an SQLite-backed database layer for persistent communication data.
+
+Persisted records include:
 
 - player toggle states
-- ignore relationships
-- persistent mail
+- ignore entries
+- mail entries
 - communication logs
 - audit logs
 - mute records
 
-The default database file is `plugins/EzChat/database.db`.
+This makes the plugin suitable for production servers that need restart-safe settings and moderation history.
 
 ---
 
 ## Installation
 
-1. Build or download `EzChat-<version>.jar`.
-2. Install **LuckPerms** on your Paper/Folia server.
-3. Optionally install **PlaceholderAPI** if you want PAPI support in formats.
-4. Optionally install **floodgate** and/or **Geyser-Spigot** for Bedrock-aware behavior.
-5. Put the jar in `plugins/`.
-6. Start the server once to generate config files.
-7. Edit the YAML files in `plugins/EzChat/`.
-8. Run `/ezchat reload` or restart the server.
+1. Install **LuckPerms** on your Paper or Folia server.
+2. Drop the EzChat jar into your `plugins/` folder.
+3. Optionally install:
+   - **PlaceholderAPI** for chat placeholders and EzChat toggle placeholders
+   - **floodgate** / **Geyser-Spigot** for improved Bedrock-aware behavior
+4. Start the server to generate configuration files.
+5. Review all YAML files and tune the systems you plan to use.
+6. Assign permissions with LuckPerms.
+7. Use `/ezchat reload` after configuration updates.
 
 ---
 
 ## Building from Source
 
+### Maven
+
+```bash
+mvn clean package
+```
+
+Build output:
+
+- shaded jar in `target/`
+- final artifact name: `EzChat-<version>.jar`
+
 ### Requirements
 
 - Java 21
 - Maven 3.9+
-
-### Build command
-
-```bash
-mvn package
-```
-
-This produces a versioned jar named like `EzChat-1.0.0.jar`.
+- Network access to the configured Paper, Spigot, and PlaceholderAPI repositories
 
 ---
 
-## Notes and Gotchas
+## Operational Notes
 
-- **LuckPerms is required.** EzChat disables itself if LuckPerms is missing.
-- **No PlaceholderAPI installed?** PAPI placeholders are simply skipped.
-- **Chat formatting duplication can happen** if another chat plugin is also formatting messages. Disable overlapping format features in plugins such as EssentialsChat, VentureChat, DeluxeChat, and similar tools.
-- **`/ezchat debug <player>` is your best first diagnostic tool** for prefix, suffix, meta colors, group format selection, and color permission checks.
-- **Toggle state is persistent.** Players keep their visibility/toggle choices across restarts.
-- **Only `/staffchat` has an explicit alias in the current plugin metadata** via `/sc`.
+- **LuckPerms is required**. EzChat disables itself if LuckPerms is unavailable.
+- **PlaceholderAPI is optional**. If it is missing, chat formatting still works, but PlaceholderAPI placeholders and EzChat's `%ezchat_*%` expansion remain unavailable.
+- **Chat-plugin overlap**: EzChat warns if common chat-formatting plugins are also installed, because dual formatting can duplicate or conflict with output.
+- **Discord is opt-in** and disabled by default.
+- **Feature flags are granular**: most systems can be enabled or disabled independently through config files.
+- **SQLite is included** so no external database is required for production use.
 
+---
+
+## Documentation
+
+Additional project documentation is available in `docs/`:
+
+- `docs/index.md`
+- `docs/installation.md`
+- `docs/configuration.md`
+- `docs/commands.md`
+- `docs/permissions.md`
+- `docs/logging.md`
+- `docs/mute-system.md`
+
+If you are preparing a public release page, this README is intended to be the high-level overview while the `docs/` directory serves as the deeper admin reference.
