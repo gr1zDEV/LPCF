@@ -15,7 +15,9 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -92,7 +94,7 @@ public final class DeathMessageService {
         }
 
         final DeathMessageCategory category = categorizeDeath(deadPlayer);
-        final String formatted = plugin.colorize(resolveFormat(category).replace("{message}", baseMessage));
+        final String formatted = plugin.colorize(applyPlaceholders(resolveFormat(category), deadPlayer, baseMessage));
 
         event.deathMessage(null);
         plugin.getServer().getGlobalRegionScheduler().execute(plugin, () -> {
@@ -169,6 +171,22 @@ public final class DeathMessageService {
             case ENVIRONMENTAL -> deathMessageConfig.getFormat("environmental", "&8[&7Death&8] &f{message}");
             case DEFAULT -> deathMessageConfig.getFormat("default", "&8[&4Death&8] &f{message}");
         };
+    }
+
+    private String applyPlaceholders(final String template,
+                                     final Player deadPlayer,
+                                     final String baseMessage) {
+        final Map<String, String> placeholders = new LinkedHashMap<>();
+        placeholders.put("player", deadPlayer.getName());
+        placeholders.put("displayname", deadPlayer.getDisplayName());
+        placeholders.put("message", baseMessage);
+
+        String rendered = template;
+        for (final Map.Entry<String, String> entry : placeholders.entrySet()) {
+            rendered = rendered.replace("{" + entry.getKey() + "}", entry.getValue() == null ? "" : entry.getValue());
+        }
+
+        return rendered;
     }
 
     private void playReceiveSound(final Player player) {
