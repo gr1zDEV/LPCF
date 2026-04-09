@@ -95,7 +95,7 @@ public final class DeathMessageService {
         }
 
         final DeathMessageCategory category = categorizeDeath(deadPlayer);
-        final String formatted = plugin.colorize(applyPlaceholders(resolveFormat(category), deadPlayer, baseMessage));
+        final String formatted = plugin.renderConfigText(applyPlaceholders(resolveFormat(category), deadPlayer, baseMessage));
 
         event.deathMessage(null);
         plugin.getServer().getGlobalRegionScheduler().execute(plugin, () -> {
