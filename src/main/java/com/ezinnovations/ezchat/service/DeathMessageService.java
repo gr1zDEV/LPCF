@@ -9,6 +9,7 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -179,6 +180,7 @@ public final class DeathMessageService {
         final Map<String, String> placeholders = new LinkedHashMap<>();
         placeholders.put("player", deadPlayer.getName());
         placeholders.put("displayname", deadPlayer.getDisplayName());
+        placeholders.put("killer", resolveKillerName(deadPlayer));
         placeholders.put("message", baseMessage);
 
         String rendered = template;
@@ -187,6 +189,34 @@ public final class DeathMessageService {
         }
 
         return rendered;
+    }
+
+    private String resolveKillerName(final Player deadPlayer) {
+        final EntityDamageEvent lastDamage = deadPlayer.getLastDamageCause();
+        if (!(lastDamage instanceof EntityDamageByEntityEvent byEntityEvent)) {
+            return "";
+        }
+
+        final Entity damager = byEntityEvent.getDamager();
+        if (damager instanceof final Projectile projectile) {
+            final Object shooter = projectile.getShooter();
+            if (shooter instanceof final Entity shooterEntity) {
+                return resolveEntityName(shooterEntity);
+            }
+            return "";
+        }
+
+        return resolveEntityName(damager);
+    }
+
+    private String resolveEntityName(final Entity entity) {
+        if (entity instanceof final Player player) {
+            return player.getName();
+        }
+        if (entity instanceof final LivingEntity livingEntity) {
+            return livingEntity.getName();
+        }
+        return entity.getName();
     }
 
     private void playReceiveSound(final Player player) {

@@ -7,7 +7,7 @@ settings:
   default-enabled: true
 
 formats:
-  # Supported placeholders: {player}, {displayname}, {message}
+  # Supported placeholders: {player}, {displayname}, {killer}, {message}
   default: "&8[&4Death&8] &f{message}"
   player-kill: "&8[&cPvP&8] &f{message}"
   mob-kill: "&8[&6Mob&8] &f{message}"
