@@ -1,10 +1,6 @@
 site_name: EzChat
 site_description: Communication management plugin for Minecraft servers
 site_author: EZInnovations
-repo_url: https://github.com/<username>/EzChat
-
-site_url: https://<username>.github.io/EzChat/
-
 theme:
   name: material
   features:
@@ -34,6 +30,7 @@ nav:
   - Configuration: configuration.md
   - Logging: logging.md
   - Mute System: mute-system.md
+  - Anti-Flood: anti-flood.md
   - Permissions: permissions.md
 
 markdown_extensions:
