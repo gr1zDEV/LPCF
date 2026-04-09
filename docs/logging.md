@@ -1,18 +1,47 @@
 # Logging
 
-EzChat includes a logging system to help with moderation and communication review.
+EzChat provides two persistent log streams backed by SQLite.
 
-## Log Types
+## Communication logs
 
-- **Communication logs**: Track player chat, private messages, and mail events.
-- **Audit logs**: Track moderation or administrative actions.
+Communication logs can track:
 
-## Log Commands
+- Public chat
+- Private messages
+- Mail events
 
-- `/ezchat logs` — Open or view logs using in-game command output.
+Use these for player-to-player history review.
 
-Depending on your setup, this command may support filters and page navigation.
+## Audit logs
 
-## Pagination
+Audit logs track internal administrative events such as:
 
-Large log outputs are typically split into pages for readability. Use command arguments (if available in your build) to move between pages or filter results.
+- Moderation actions (mute/unmute)
+- Staff actions triggered by EzChat features
+- Toggle and system-level state changes
+
+## Log commands
+
+| Command | Purpose |
+| --- | --- |
+| `/ezchat logs player <player> [page]` | All communication involving a player |
+| `/ezchat logs between <player1> <player2> [page]` | Conversation logs between two players |
+| `/ezchat logs public <player> [page]` | Public chat logs for one player |
+| `/ezchat logs msg <player> [page]` | Private message logs for one player |
+| `/ezchat logs mail <player> [page]` | Mail logs for one player |
+| `/ezchat logs search <keyword> [page]` | Keyword search across communication logs |
+
+## Tuning logging behavior
+
+Review `logs.yml` for:
+
+- Page size and output readability
+- Timestamp format and timezone assumptions
+- Which categories are enabled
+- Message templates for staff-facing output
+
+## Best practices
+
+- Restrict `ezchat.logs` to trusted moderators.
+- Keep logs enabled for at least chat + PM on public servers.
+- Pair log review with audit logs for moderation context.

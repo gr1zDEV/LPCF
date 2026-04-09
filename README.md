@@ -410,6 +410,7 @@ Formatted output uses the configured `true-text` and `false-text` values.
 | --- | --- | --- |
 | `ezchat.bypass.advertising` | `op` | Bypass anti-advertising checks. |
 | `ezchat.bypass.profanity` | `op` | Bypass profanity checks. |
+| `ezchat.bypass.flood` | `op` | Bypass anti-flood checks. |
 
 ---
 
@@ -425,6 +426,7 @@ EzChat splits its configuration into focused files so production changes stay re
 | `logs.yml` | Communication and audit logging settings, page size, and timestamp formatting. |
 | `mute.yml` | Mute feature toggles, channel blocks, and mute command messaging. |
 | `anti-spam.yml` | Advertising detection rules, channel coverage, actions, and whitelist settings. |
+| `anti-flood.yml` | Anti-flood thresholds, cooldown windows, and action routing for repetitive messages. |
 | `profanity.yml` | Profanity checks, regex settings, actions, and channel coverage. |
 | `blocked-words.yml` | Word-list entries used by the profanity system. |
 | `staff.yml` | Staff chat, alerts, social spy, and mail spy formatting/settings. |
@@ -516,6 +518,17 @@ Build output:
 
 ---
 
+### Previewing the documentation site
+
+If you maintain the `docs/` site locally:
+
+```bash
+pip install mkdocs-material
+mkdocs serve
+```
+
+Then open the local URL shown by MkDocs (usually `http://127.0.0.1:8000`).
+
 ## Operational Notes
 
 - **LuckPerms is required**. EzChat disables itself if LuckPerms is unavailable.
@@ -538,5 +551,6 @@ Additional project documentation is available in `docs/`:
 - `docs/permissions.md`
 - `docs/logging.md`
 - `docs/mute-system.md`
+- `docs/anti-flood.md` (if anti-flood feature is enabled in your deployment)
 
 If you are preparing a public release page, this README is intended to be the high-level overview while the `docs/` directory serves as the deeper admin reference.
