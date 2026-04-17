@@ -156,24 +156,28 @@ public final class JoinLeaveService {
     }
 
     private String resolveJoinMessage(final PlayerJoinEvent event, final Player joinedPlayer) {
-        if (joinLeaveConfig.useVanillaJoinMessage()) {
-            final Component component = event.joinMessage();
-            final String text = resolveComponentText(component);
-            if (text != null && !text.isBlank()) {
-                return text;
-            }
+        if (!joinLeaveConfig.useVanillaJoinMessage()) {
+            return "";
+        }
+
+        final Component component = event.joinMessage();
+        final String text = resolveComponentText(component);
+        if (text != null && !text.isBlank()) {
+            return text;
         }
 
         return joinedPlayer.getName() + " joined the game";
     }
 
     private String resolveLeaveMessage(final PlayerQuitEvent event, final Player leftPlayer) {
-        if (joinLeaveConfig.useVanillaLeaveMessage()) {
-            final Component component = event.quitMessage();
-            final String text = resolveComponentText(component);
-            if (text != null && !text.isBlank()) {
-                return text;
-            }
+        if (!joinLeaveConfig.useVanillaLeaveMessage()) {
+            return "";
+        }
+
+        final Component component = event.quitMessage();
+        final String text = resolveComponentText(component);
+        if (text != null && !text.isBlank()) {
+            return text;
         }
 
         return leftPlayer.getName() + " left the game";
