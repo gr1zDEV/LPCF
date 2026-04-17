@@ -15,12 +15,12 @@ public final class JoinLeaveMessageListener implements Listener {
         this.joinLeaveService = joinLeaveService;
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerJoin(final PlayerJoinEvent event) {
         joinLeaveService.handleJoinMessage(event);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerQuit(final PlayerQuitEvent event) {
         joinLeaveService.handleLeaveMessage(event);
     }
